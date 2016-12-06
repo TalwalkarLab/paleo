@@ -1,0 +1,1188 @@
+{
+    "name": "Inception v3",
+    "layers": {
+        "data": {
+            "parents": [],
+            "type": "Input",
+            "tensor": [64, 299, 299, 3]
+        },
+        "Conv2d_1a_3x3": {
+            "parents": ["data"],
+            "type": "Convolution",
+            "filter": [3, 3, 3, 32],
+            "padding": "VALID",
+            "strides": [1, 2, 2, 1],
+            "activation_fn": "relu",
+            "normalizer_fn": "batch_norm"
+        },
+        "Conv2d_2a_3x3": {
+            "parents": ["Conv2d_1a_3x3"],
+            "type": "Convolution",
+            "filter": [3, 3, 32, 32],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu",
+            "normalizer_fn": "batch_norm"
+        },
+         "Conv2d_2b_3x3": {
+            "parents": ["Conv2d_2a_3x3"],
+            "type": "Convolution",
+            "filter": [3, 3, 32, 64],
+            "padding": "SAME",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu",
+            "normalizer_fn": "batch_norm"
+        },
+        "MaxPool_3a_3x3": {
+            "parents": ["Conv2d_2b_3x3"],
+            "type": "Pooling",
+            "ksize": [1, 3, 3, 1],
+            "strides": [1, 2, 2, 1],
+            "padding": "VALID"
+        },
+        "Conv2d_3b_1x1": {
+            "parents": ["MaxPool_3a_3x3"],
+            "type": "Convolution",
+            "filter": [1, 1, 64, 80],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu",
+            "normalizer_fn": "batch_norm"
+        },
+        "Conv2d_4a_3x3": {
+            "parents": ["Conv2d_3b_1x1"],
+            "type": "Convolution",
+            "filter": [3, 3, 80, 192],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu",
+            "normalizer_fn": "batch_norm"
+        },
+        "MaxPool_5a_3x3": {
+            "parents": ["Conv2d_4a_3x3"],
+            "type": "Pooling",
+            "ksize": [1, 3, 3, 1],
+            "strides": [1, 2, 2, 1],
+            "padding": "VALID"
+        },
+        "Mixed_5b": {
+            "type": "Block",
+            "parents": ["MaxPool_5a_3x3"],
+            "endpoint": "concat",
+            "layers": {
+                "Branch_0/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 192, 64],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 192, 48],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_5x5": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [5, 5, 48, 64],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 192, 64],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0b_3x3": {
+                    "parents": ["Branch_2/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [3, 3, 64, 96],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0c_3x3": {
+                    "parents": ["Branch_2/Conv2d_0b_3x3"],
+                    "type": "Convolution",
+                    "filter": [3, 3, 96, 96],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_3/AvgPool_0a_3x3": {
+                    "parents": [],
+                    "type": "AvgPool",
+                    "ksize": [1, 3, 3, 1],
+                    "strides": [1, 1, 1, 1],
+                    "padding": "SAME"
+                },
+                "Branch_3/Conv2d_0b_1x1": {
+                    "parents": ["Branch_3/AvgPool_0a_3x3"],
+                    "type": "Convolution",
+                    "filter": [1, 1, 192, 32],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "concat": {
+                    "parents": [
+                        "Branch_0/Conv2d_0a_1x1",
+                        "Branch_1/Conv2d_0b_5x5",
+                        "Branch_2/Conv2d_0c_3x3",
+                        "Branch_3/Conv2d_0b_1x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                }
+            }
+        },
+        "Mixed_5c": {
+            "type": "Block",
+            "parents": ["Mixed_5b/concat"],
+            "endpoint": "concat",
+            "layers": {
+                "Branch_0/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 256, 64],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 256, 48],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_5x5": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [5, 5, 48, 64],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 256, 64],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0b_3x3": {
+                    "parents": ["Branch_2/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [3, 3, 64, 96],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0c_3x3": {
+                    "parents": ["Branch_2/Conv2d_0b_3x3"],
+                    "type": "Convolution",
+                    "filter": [3, 3, 96, 96],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_3/AvgPool_0a_3x3": {
+                    "parents": [],
+                    "type": "AvgPool",
+                    "ksize": [1, 3, 3, 1],
+                    "strides": [1, 1, 1, 1],
+                    "padding": "SAME"
+                },
+                "Branch_3/Conv2d_0b_1x1": {
+                    "parents": ["Branch_3/AvgPool_0a_3x3"],
+                    "type": "Convolution",
+                    "filter": [1, 1, 256, 64],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "concat": {
+                    "parents": [
+                        "Branch_0/Conv2d_0a_1x1",
+                        "Branch_1/Conv2d_0b_5x5",
+                        "Branch_2/Conv2d_0c_3x3",
+                        "Branch_3/Conv2d_0b_1x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                }
+            }
+        },
+        "Mixed_5d": {
+            "type": "Block",
+            "parents": ["Mixed_5c/concat"],
+            "endpoint": "concat",
+            "layers": {
+                "Branch_0/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 288, 64],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 288, 48],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_5x5": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [5, 5, 48, 64],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 288, 64],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0b_3x3": {
+                    "parents": ["Branch_2/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [3, 3, 64, 96],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0c_3x3": {
+                    "parents": ["Branch_2/Conv2d_0b_3x3"],
+                    "type": "Convolution",
+                    "filter": [3, 3, 96, 96],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_3/AvgPool_0a_3x3": {
+                    "parents": [],
+                    "type": "AvgPool",
+                    "ksize": [1, 3, 3, 1],
+                    "strides": [1, 1, 1, 1],
+                    "padding": "SAME"
+                },
+                "Branch_3/Conv2d_0b_1x1": {
+                    "parents": ["Branch_3/AvgPool_0a_3x3"],
+                    "type": "Convolution",
+                    "filter": [1, 1, 288, 64],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "concat": {
+                    "parents": [
+                        "Branch_0/Conv2d_0a_1x1",
+                        "Branch_1/Conv2d_0b_5x5",
+                        "Branch_2/Conv2d_0c_3x3",
+                        "Branch_3/Conv2d_0b_1x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                }
+            }
+        },
+        "Mixed_6a": {
+            "type": "Block",
+            "parents": ["Mixed_5d/concat"],
+            "endpoint": "concat",
+            "layers": {
+                "Branch_0/Conv2d_1a_3x3": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [3, 3, 288, 384],
+                    "padding": "VALID",
+                    "strides": [1, 2, 2, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 288, 64],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_3x3": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [3, 3, 64, 96],
+                    "padding": "VALID",
+                    "strides": [1, 2, 2, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/MaxPool_1a_3x3": {
+                    "parents": [],
+                    "type": "Pooling",
+                    "ksize": [1, 3, 3, 1],
+                    "strides": [1, 2, 2, 1],
+                    "padding": "VALID"
+                },
+                "concat": {
+                    "parents": [
+                        "Branch_0/Conv2d_1a_3x3",
+                        "Branch_1/Conv2d_0b_3x3",
+                        "Branch_2/MaxPool_1a_3x3"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                }
+            }
+        },
+        "Mixed_6b": {
+            "type": "Block",
+            "parents": ["Mixed_6a/concat"],
+            "endpoint": "concat",
+            "layers": {
+                "Branch_0/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 128],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_1x7": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 128, 128],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_7x1": {
+                    "parents": ["Branch_1/Conv2d_0b_1x7"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 128, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 128],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0b_7x1": {
+                    "parents": ["Branch_2/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 128, 128],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0c_1x7": {
+                    "parents": ["Branch_2/Conv2d_0b_7x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 128, 128],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0d_7x1": {
+                    "parents": ["Branch_2/Conv2d_0c_1x7"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 128, 128],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0e_1x7": {
+                    "parents": ["Branch_2/Conv2d_0d_7x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 128, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_3/AvgPool_0a_3x3": {
+                    "parents": [],
+                    "type": "AvgPool",
+                    "ksize": [1, 3, 3, 1],
+                    "strides": [1, 1, 1, 1],
+                    "padding": "SAME"
+                },
+                "Branch_3/Conv2d_0b_1x1": {
+                    "parents": ["Branch_3/AvgPool_0a_3x3"],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "concat": {
+                    "parents": [
+                        "Branch_0/Conv2d_0a_1x1",
+                        "Branch_1/Conv2d_0b_7x1",
+                        "Branch_2/Conv2d_0e_1x7",
+                        "Branch_3/Conv2d_0b_1x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                }
+            }
+        },
+        "Mixed_6c": {
+            "type": "Block",
+            "parents": ["Mixed_6b/concat"],
+            "endpoint": "concat",
+            "layers": {
+                "Branch_0/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 160],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_1x7": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 160, 160],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_7x1": {
+                    "parents": ["Branch_1/Conv2d_0b_1x7"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 160, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 160],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0b_7x1": {
+                    "parents": ["Branch_2/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 160, 160],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0c_1x7": {
+                    "parents": ["Branch_2/Conv2d_0b_7x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 160, 160],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0d_7x1": {
+                    "parents": ["Branch_2/Conv2d_0c_1x7"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 160, 160],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0e_1x7": {
+                    "parents": ["Branch_2/Conv2d_0d_7x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 160, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_3/AvgPool_0a_3x3": {
+                    "parents": [],
+                    "type": "AvgPool",
+                    "ksize": [1, 3, 3, 1],
+                    "strides": [1, 1, 1, 1],
+                    "padding": "SAME"
+                },
+                "Branch_3/Conv2d_0b_1x1": {
+                    "parents": ["Branch_3/AvgPool_0a_3x3"],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "concat": {
+                    "parents": [
+                        "Branch_0/Conv2d_0a_1x1",
+                        "Branch_1/Conv2d_0b_7x1",
+                        "Branch_2/Conv2d_0e_1x7",
+                        "Branch_3/Conv2d_0b_1x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                }
+            }
+        },
+        "Mixed_6d": {
+            "type": "Block",
+            "parents": ["Mixed_6c/concat"],
+            "endpoint": "concat",
+            "layers": {
+                "Branch_0/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 160],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_1x7": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 160, 160],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_7x1": {
+                    "parents": ["Branch_1/Conv2d_0b_1x7"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 160, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 160],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0b_7x1": {
+                    "parents": ["Branch_2/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 160, 160],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0c_1x7": {
+                    "parents": ["Branch_2/Conv2d_0b_7x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 160, 160],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0d_7x1": {
+                    "parents": ["Branch_2/Conv2d_0c_1x7"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 160, 160],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0e_1x7": {
+                    "parents": ["Branch_2/Conv2d_0d_7x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 160, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_3/AvgPool_0a_3x3": {
+                    "parents": [],
+                    "type": "AvgPool",
+                    "ksize": [1, 3, 3, 1],
+                    "strides": [1, 1, 1, 1],
+                    "padding": "SAME"
+                },
+                "Branch_3/Conv2d_0b_1x1": {
+                    "parents": ["Branch_3/AvgPool_0a_3x3"],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "concat": {
+                    "parents": [
+                        "Branch_0/Conv2d_0a_1x1",
+                        "Branch_1/Conv2d_0b_7x1",
+                        "Branch_2/Conv2d_0e_1x7",
+                        "Branch_3/Conv2d_0b_1x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                }
+            }
+        },
+        "Mixed_6e": {
+            "type": "Block",
+            "parents": ["Mixed_6d/concat"],
+            "endpoint": "concat",
+            "layers": {
+                "Branch_0/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_1x7": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 192, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_7x1": {
+                    "parents": ["Branch_1/Conv2d_0b_1x7"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 192, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0b_7x1": {
+                    "parents": ["Branch_2/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 192, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0c_1x7": {
+                    "parents": ["Branch_2/Conv2d_0b_7x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 192, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0d_7x1": {
+                    "parents": ["Branch_2/Conv2d_0c_1x7"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 192, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0e_1x7": {
+                    "parents": ["Branch_2/Conv2d_0d_7x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 192, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_3/AvgPool_0a_3x3": {
+                    "parents": [],
+                    "type": "AvgPool",
+                    "ksize": [1, 3, 3, 1],
+                    "strides": [1, 1, 1, 1],
+                    "padding": "SAME"
+                },
+                "Branch_3/Conv2d_0b_1x1": {
+                    "parents": ["Branch_3/AvgPool_0a_3x3"],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "concat": {
+                    "parents": [
+                        "Branch_0/Conv2d_0a_1x1",
+                        "Branch_1/Conv2d_0b_7x1",
+                        "Branch_2/Conv2d_0e_1x7",
+                        "Branch_3/Conv2d_0b_1x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                }
+            }
+        },
+        "Mixed_7a": {
+            "type": "Block",
+            "parents": ["Mixed_6e/concat"],
+            "endpoint": "concat",
+            "layers": {
+                "Branch_0/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_0/Conv2d_1a_3x3": {
+                    "parents": ["Branch_0/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [3, 3, 192, 320],
+                    "padding": "VALID",
+                    "strides": [1, 2, 2, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 768, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_1x7": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [1, 7, 192, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_7x1": {
+                    "parents": ["Branch_1/Conv2d_0b_1x7"],
+                    "type": "Convolution",
+                    "filter": [7, 1, 192, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_1a_3x3": {
+                    "parents": ["Branch_1/Conv2d_0b_7x1"],
+                    "type": "Convolution",
+                    "filter": [3, 3, 192, 192],
+                    "padding": "VALID",
+                    "strides": [1, 2, 2, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/MaxPool_1a_3x3": {
+                    "parents": [],
+                    "type": "Pooling",
+                    "ksize": [1, 3, 3, 1],
+                    "strides": [1, 2, 2, 1],
+                    "padding": "VALID"
+                },
+                "concat": {
+                    "parents": [
+                        "Branch_0/Conv2d_1a_3x3",
+                        "Branch_1/Conv2d_1a_3x3",
+                        "Branch_2/MaxPool_1a_3x3"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                }
+            }
+        },
+        "Mixed_7b": {
+            "type": "Block",
+            "parents": ["Mixed_7a/concat"],
+            "endpoint": "concat",
+            "layers": {
+                "Branch_0/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 1280, 320],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                 "Branch_1/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 1280, 384],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_1x3": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [1, 3, 384, 384],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_3x1": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [3, 1, 384, 384],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/concat": {
+                    "parents": [
+                        "Branch_1/Conv2d_0b_1x3",
+                        "Branch_1/Conv2d_0b_3x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                },
+                "Branch_2/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 1280, 448],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0b_3x3": {
+                    "parents": ["Branch_2/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [3, 3, 448, 384],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0c_1x3": {
+                    "parents": ["Branch_2/Conv2d_0b_3x3"],
+                    "type": "Convolution",
+                    "filter": [1, 3, 384, 384],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0d_3x1": {
+                    "parents": ["Branch_2/Conv2d_0b_3x3"],
+                    "type": "Convolution",
+                    "filter": [3, 1, 384, 384],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/concat": {
+                    "parents": [
+                        "Branch_2/Conv2d_0c_1x3",
+                        "Branch_2/Conv2d_0d_3x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                },
+                "Branch_3/AvgPool_0a_3x3": {
+                    "parents": [],
+                    "type": "AvgPool",
+                    "ksize": [1, 3, 3, 1],
+                    "strides": [1, 1, 1, 1],
+                    "padding": "SAME"
+                },
+                "Branch_3/Conv2d_0b_1x1": {
+                    "parents": ["Branch_3/AvgPool_0a_3x3"],
+                    "type": "Convolution",
+                    "filter": [1, 1, 1280, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "concat": {
+                    "parents": [
+                        "Branch_0/Conv2d_0a_1x1",
+                        "Branch_1/concat",
+                        "Branch_2/concat",
+                        "Branch_3/Conv2d_0b_1x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                }
+            }
+        },
+        "Mixed_7c": {
+            "type": "Block",
+            "parents": ["Mixed_7b/concat"],
+            "endpoint": "concat",
+            "layers": {
+                "Branch_0/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 2048, 320],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                 "Branch_1/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 2048, 384],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_1x3": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [1, 3, 384, 384],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/Conv2d_0b_3x1": {
+                    "parents": ["Branch_1/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [3, 1, 384, 384],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_1/concat": {
+                    "parents": [
+                        "Branch_1/Conv2d_0b_1x3",
+                        "Branch_1/Conv2d_0b_3x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                },
+                "Branch_2/Conv2d_0a_1x1": {
+                    "parents": [],
+                    "type": "Convolution",
+                    "filter": [1, 1, 2048, 448],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0b_3x3": {
+                    "parents": ["Branch_2/Conv2d_0a_1x1"],
+                    "type": "Convolution",
+                    "filter": [3, 3, 448, 384],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0c_1x3": {
+                    "parents": ["Branch_2/Conv2d_0b_3x3"],
+                    "type": "Convolution",
+                    "filter": [1, 3, 384, 384],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/Conv2d_0d_3x1": {
+                    "parents": ["Branch_2/Conv2d_0b_3x3"],
+                    "type": "Convolution",
+                    "filter": [3, 1, 384, 384],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "Branch_2/concat": {
+                    "parents": [
+                        "Branch_2/Conv2d_0c_1x3",
+                        "Branch_2/Conv2d_0d_3x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                },
+                "Branch_3/AvgPool_0a_3x3": {
+                    "parents": [],
+                    "type": "AvgPool",
+                    "ksize": [1, 3, 3, 1],
+                    "strides": [1, 1, 1, 1],
+                    "padding": "SAME"
+                },
+                "Branch_3/Conv2d_0b_1x1": {
+                    "parents": ["Branch_3/AvgPool_0a_3x3"],
+                    "type": "Convolution",
+                    "filter": [1, 1, 2048, 192],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": "relu",
+                    "normalizer_fn": "batch_norm"
+                },
+                "concat": {
+                    "parents": [
+                        "Branch_0/Conv2d_0a_1x1",
+                        "Branch_1/concat",
+                        "Branch_2/concat",
+                        "Branch_3/Conv2d_0b_1x1"
+                    ],
+                    "type": "Concatenate",
+                    "dim": 3
+                }
+            }
+        },
+        "Logits": {
+            "type": "Block",
+            "parents": ["Mixed_7c/concat"],
+            "endpoint": "Conv2d_1c_1x1",
+            "layers": {
+                "AvgPool_1a_8x8": {
+                    "parents": [],
+                    "type": "AvgPool",
+                    "ksize": [1, 8, 8, 1],
+                    "strides": [1, 2, 2, 1],
+                    "padding": "VALID"
+                },
+                "Dropout_1b": {
+                    "parents": ["AvgPool_1a_8x8"],
+                    "type": "Dropout",
+                    "dropout_keep_prob": 0.5
+                },
+                "Conv2d_1c_1x1": {
+                    "parents": ["Dropout_1b"],
+                    "type": "Convolution",
+                    "filter": [1, 1, 2048, 1000],
+                    "padding": "SAME",
+                    "strides": [1, 1, 1, 1],
+                    "activation_fn": null,
+                    "normalizer_fn": null
+                }
+            }
+        },
+        "softmax": {
+            "parents": ["Logits/Conv2d_1c_1x1"],
+            "type": "Softmax",
+            "num_classes": 1000
+        }
+    }
+}

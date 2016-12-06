@@ -1,0 +1,110 @@
+{
+    "name": "Overfeat net, LeCun 2014 - From SLIM",
+    "layers": {
+        "data": {
+            "parents": [],
+            "type": "Input",
+            "tensor": [128, 231, 231, 3]
+        },
+        "conv1": {
+            "parents": ["data"],
+            "type": "Convolution",
+            "filter": [11, 11, 3, 64],
+            "padding": "VALID",
+            "strides": [1, 4, 4, 1],
+            "bias": [64]
+        },
+        "pool1": {
+            "parents": ["conv1"],
+            "type": "Pooling",
+            "ksize": [1, 2, 2, 1],
+            "strides": [1, 2, 2, 1],
+            "padding": "VALID"
+        },
+        "conv2": {
+            "parents": ["pool1"],
+            "type": "Convolution",
+            "filter": [5, 5, 64, 256],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "bias": [256]
+        },
+        "pool2": {
+            "parents": ["conv2"],
+            "type": "Pooling",
+            "ksize": [1, 2, 2, 1],
+            "strides": [1, 2, 2, 1],
+            "padding": "VALID"
+        },
+        "conv3": {
+            "parents": ["pool2"],
+            "type": "Convolution",
+            "filter": [3, 3, 256, 512],
+            "padding": "SAME",
+            "strides": [1, 1, 1, 1],
+            "bias": [512]
+        },
+        "conv4": {
+            "parents": ["conv3"],
+            "type": "Convolution",
+            "filter": [3, 3, 512, 1024],
+            "padding": "SAME",
+            "strides": [1, 1, 1, 1],
+            "bias": [1024]
+        },
+        "conv5": {
+            "parents": ["conv4"],
+            "type": "Convolution",
+            "filter": [3, 3, 1024, 1024],
+            "padding": "SAME",
+            "strides": [1, 1, 1, 1],
+            "bias": [1024]
+        },
+        "pool5": {
+            "parents": ["conv5"],
+            "type": "Pooling",
+            "ksize": [1, 2, 2, 1],
+            "strides": [1, 2, 2, 1],
+            "padding": "VALID"
+        },
+        "fc6": {
+            "parents": ["pool5"],
+            "type": "Convolution",
+            "filter": [6, 6, 1024, 3072],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "dropout6": {
+            "parents": ["fc6"],
+            "type": "Dropout",
+            "dropout_keep_prob": 0.5
+        },
+        "fc7": {
+            "parents": ["dropout6"],
+            "type": "Convolution",
+            "filter": [1, 1, 3072, 4096],
+            "padding": "SAME",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "dropout7": {
+            "parents": ["fc7"],
+            "type": "Dropout",
+            "dropout_keep_prob": 0.5
+        },
+        "fc8": {
+            "parents": ["dropout7"],
+            "type": "Convolution",
+            "filter": [1, 1, 4096, 1000],
+            "padding": "SAME",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": null
+        },
+        "softmax": {
+            "parents": ["fc8"],
+            "type": "Softmax",
+            "num_classes": 1000
+        }
+    }
+}

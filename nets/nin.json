@@ -1,0 +1,144 @@
+{
+    "name": "NIN - https://gist.github.com/mavenlin/d802a5849de39225bcc6#file-train_val-prototxt",
+    "layers": {
+        "data": {
+            "parents": [],
+            "type": "Input",
+            "tensor": [128, 224, 224, 3]
+        },
+        "conv1": {
+            "parents": ["data"],
+            "type": "Convolution",
+            "filter": [11, 11, 3, 96],
+            "padding": "VALID",
+            "strides": [1, 4, 4, 1],
+            "activation_fn": "relu"
+        },
+        "cccp1": {
+            "parents": ["conv1"],
+            "type": "Convolution",
+            "filter": [1, 1, 96, 96],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "cccp2": {
+            "parents": ["cccp1"],
+            "type": "Convolution",
+            "filter": [1, 1, 96, 96],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "pool0": {
+            "parents": ["cccp2"],
+            "type": "Pooling",
+            "ksize": [1, 3, 3, 1],
+            "strides": [1, 2, 2, 1],
+            "padding": "VALID"
+        },
+        "conv2": {
+            "parents": ["pool0"],
+            "type": "Convolution",
+            "filter": [5, 5, 96, 256],
+            "padding": "SAME",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "cccp3": {
+            "parents": ["conv2"],
+            "type": "Convolution",
+            "filter": [1, 1, 256, 256],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "cccp4": {
+            "parents": ["cccp3"],
+            "type": "Convolution",
+            "filter": [1, 1, 256, 256],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "pool2": {
+            "parents": ["cccp4"],
+            "type": "Pooling",
+            "ksize": [1, 3, 3, 1],
+            "strides": [1, 2, 2, 1],
+            "padding": "VALID"
+        },
+        "conv3": {
+            "parents": ["pool2"],
+            "type": "Convolution",
+            "filter": [3, 3, 256, 384],
+            "padding": "SAME",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "cccp5": {
+            "parents": ["conv3"],
+            "type": "Convolution",
+            "filter": [1, 1, 384, 384],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "cccp6": {
+            "parents": ["cccp5"],
+            "type": "Convolution",
+            "filter": [1, 1, 384, 384],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "pool3": {
+            "parents": ["cccp6"],
+            "type": "Pooling",
+            "ksize": [1, 3, 3, 1],
+            "strides": [1, 2, 2, 1],
+            "padding": "VALID"
+        },
+        "drop": {
+            "parents": ["pool3"],
+            "type": "Dropout",
+            "dropout_keep_prob": 0.5
+        },
+        "conv4": {
+            "parents": ["drop"],
+            "type": "Convolution",
+            "filter": [3, 3, 384, 1024],
+            "padding": "SAME",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "cccp7": {
+            "parents": ["conv4"],
+            "type": "Convolution",
+            "filter": [1, 1, 1024, 1024],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "cccp8": {
+            "parents": ["cccp7"],
+            "type": "Convolution",
+            "filter": [1, 1, 1024, 1000],
+            "padding": "VALID",
+            "strides": [1, 1, 1, 1],
+            "activation_fn": "relu"
+        },
+        "pool4": {
+            "parents": ["cccp8"],
+            "type": "AvgPool",
+            "ksize": [1, 5, 5, 1],
+            "strides": [1, 1, 1, 1],
+            "padding": "VALID"
+        },
+        "softmax": {
+            "parents": ["pool4"],
+            "type": "Softmax",
+            "num_classes": 1000
+        }
+    }
+}
