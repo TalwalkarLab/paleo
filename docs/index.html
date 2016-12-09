@@ -52,7 +52,7 @@
                 <div class="paleo-panel-title mdl-typography--title mdl-typography--font-thin">Choose a setup</div>
                 <div class="control-group">
                   <div class="control">
-                    <label class="select-label" for="paleo-input__model">Model Architecture</label>
+                    <label class="select-label" for="paleo-input__model">Model Architecture<sup>1</sup></label>
                     <div class="select">
                       <select id="paleo-input__model">
                         <option value="inception_v3" selected>Inception v3</option>
@@ -80,14 +80,14 @@
                     <div class="select">
                       <select id="paleo-input__device">
                         <option value="K20">NVIDIA K20 GPU</option>
-                        <option value="K40" selected>NVIDIA K40 GPU</option>
-                        <option value="K80">NVIDIA K80 GPU</option>
+                        <option value="K40">NVIDIA K40 GPU</option>
+                        <option value="K80" selected>NVIDIA K80 GPU</option>
                         <option value="TITAN_X">NVIDIA TITAN X GPU</option>
                       </select>
                     </div>
                   </div>
                   <div class="control">
-                    <label class="select-label" for="paleo-input__network">Network</label>
+                    <label class="select-label" for="paleo-input__network">Network<sup>2</sup></label>
                     <div class="select">
                       <select id="paleo-input__network">
                         <option value="ethernet">Ethernet (10 Gbps)</option>
@@ -162,8 +162,10 @@
                 </div>
               </div>
               <div class="paleo-info-panel">
-                <div class="paleo-panel-title mdl-typography--title mdl-typography--font-thin"></div>
-                <p></p>
+                <div class="paleo-panel-title mdl-typography--title mdl-typography--font-thin">Notes</div>
+                <p><sup>1</sup> The current live demo only supports data parallelism and a predefined set of models and devices. Features including customization and model parallelism will be available in later releases.</p>
+                <p><sup>2</sup> The current live demo does not deal with for multiple GPUs on the same host. More flexibilities will be added in later releases.</p>
+                <p><sup>3</sup> Cost is calculated based on $0.9/hour per GPU. </p>
               </div>
             </div>
 
@@ -182,7 +184,7 @@
                 </div>
                 <div class="paleo-plot-container">
                   <div class="paleo-plot-title mdl-typography--title">Estimated Cost</div>
-                  <p>Cost for running a fixed number of epochs. Only support AWS EC2 P2 instances for now.</p>
+                  <p>Cost for running a fixed number of epochs. Only support AWS EC2 P2 instances for now.<sup>3</sup></p>
                   <div class="ct-chart-cost paleo-plot"></div>
                 </div>
               </div>

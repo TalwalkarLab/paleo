@@ -31,12 +31,12 @@ $(document).ready(function(){
   $('#paleo-input__cloud').change(function(){
     var cloud = $('#paleo-input__cloud').val();
     if (cloud == 'awsp2') {
-      $('#paleo-input__device').val('K40');
+      $('#paleo-input__device').val('K80');
       $('#paleo-input__network').val('ethernet20');
     }
   });
   var selectEC2 = function(){
-    if ($('#paleo-input__device').val() == 'K40' &&
+    if ($('#paleo-input__device').val() == 'K80' &&
       $('#paleo-input__network').val() == 'ethernet20'){
       $('#paleo-input__cloud').val('awsp2');
     } else {
