@@ -1,5 +1,6 @@
 var precomputedResults = null;
 var commNames = ['OneToAll', 'TreeAllReduce', 'ButterflyAllReduce'];
+var EC2_P2_COST_PER_GPU_PER_HOUR = 0.9;
 
 // Gather inputs to paleo.
 $(document).ready(function(){
@@ -7,6 +8,7 @@ $(document).ready(function(){
 
   $('#paleo-submit-btn').click(onSubmit);
 
+  // Tips for weak / strong scaling.
   $('input[name=paleo-input__scaling]').change(function(){
     if ($(this).val() == 'weak') {
       $('#paleo-control-info__strong').hide();
@@ -17,6 +19,7 @@ $(document).ready(function(){
     }
   });
 
+  // Batch size slider.
   $('#paleo-input__batch_size').html(
     Math.pow(2, parseInt($('#paleo-input__batch_size_power').val())));
   $('#paleo-input__batch_size_power').change(function(){
@@ -24,6 +27,26 @@ $(document).ready(function(){
       Math.pow(2, parseInt($('#paleo-input__batch_size_power').val())));
   });
 
+  // Cloud selector.
+  $('#paleo-input__cloud').change(function(){
+    var cloud = $('#paleo-input__cloud').val();
+    if (cloud == 'awsp2') {
+      $('#paleo-input__device').val('K40');
+      $('#paleo-input__network').val('ethernet20');
+    }
+  });
+  var selectEC2 = function(){
+    if ($('#paleo-input__device').val() == 'K40' &&
+      $('#paleo-input__network').val() == 'ethernet20'){
+      $('#paleo-input__cloud').val('awsp2');
+    } else {
+      $('#paleo-input__cloud').val('none');
+    }
+  }
+  $('#paleo-input__device').change(selectEC2);
+  $('#paleo-input__network').change(selectEC2);
+
+  // Load results.
   $.getJSON("precompute.json", function(json) {
     precomputedResults = json;
     onSubmit();
@@ -54,33 +77,57 @@ function gatherPaleoInputs() {
 }
 
 function tooltipFunc(meta, value){
-  return meta.replace(/,/g, "<br>");
+  return meta.replace(/;/g, "<br>");
 }
 
 // Success. Plot the results.
 function onPaleoSuccess(data) {
-  var series = data.series;
 
-  // Add absolute time to the tooltip description.
-  var datasetSize = parseFloat($('#paleo-input__dataset_size').val());
-  var nepoch = parseFloat($('#paleo-input__nepoch').val());
-  var batch_size = parseFloat($('#paleo-input__batch_size').html());
-  var iterations = datasetSize / batch_size * nepoch;
+  var seriesSpeedup = [];
   for (var i = 0; i < data.series.length; i++) {
-    for (var j = 0; j < series[i].length; j++) {
-      var time = Math.round(iterations * data.times[i][j] / 1000 / 3600);
-      var meta = [commNames[i],
-        Math.round(series[i][j]) + "x speedup", time + ' hours'].join()
-      series[i][j] = {meta: meta, value: series[i][j]};
-    }
+    seriesSpeedup.push(data.series[i].map(function(speedup){
+      var meta = [commNames[i], Math.round(speedup) + "x speedup"].join(';')
+      return {meta: meta, value: speedup};
+    }));
   }
 
-  var data = {
-    labels: data.labels,
-    series: series,
-  };
+  new Chartist.Line('.ct-chart-speedup',
+    {labels: data.labels, series: seriesSpeedup}, plotOptions);
 
-  new Chartist.Line('.ct-chart', data, plotOptions);
+
+  // Time plot
+  var seriesTime = [];
+  for (var i = 0; i < data.times.length; i++) {
+    seriesTime.push(data.times[i].map(function(t){
+      var timePerBatch = Math.round(t);
+      var meta = [commNames[i], timePerBatch.toLocaleString() + " ms"].join(';');
+      return {meta: meta, value: timePerBatch};
+    }));
+  }
+  new Chartist.Line('.ct-chart-time',
+    {labels: data.labels, series: seriesTime}, timePlotOptions);
+
+  // Cost plot
+  var seriesCost = [];
+  var cloud = $('#paleo-input__cloud').val();
+  if (cloud == 'awsp2') {
+    var datasetSize = parseFloat($('#paleo-input__dataset_size').val());
+    var nepoch = parseFloat($('#paleo-input__nepoch').val());
+    var batch_size = parseFloat($('#paleo-input__batch_size').html());
+    var iterations = datasetSize / batch_size * nepoch;
+    for (var i = 0; i < data.times.length; i++) {
+      seriesCost.push(data.times[i].map(function(t, index){
+        var timeInHour = Math.ceil(iterations * t / 1000 / 3600);
+        var ngpus = Math.pow(2, index);
+        var cost = Math.round(
+          timeInHour * EC2_P2_COST_PER_GPU_PER_HOUR * ngpus);
+        var meta = [commNames[i], "$" + cost.toLocaleString()].join(';');
+        return {meta: meta, value: cost};
+      }));
+    }
+  }
+  new Chartist.Line('.ct-chart-cost',
+      {labels: data.labels, series: seriesCost}, costPlotOptions);
 }
 
 function onSubmit(e) {
@@ -143,7 +190,7 @@ var plotOptions = {
         textAnchor: 'middle'
       },
       axisY: {
-        axisTitle: 'Speedup relative to one worker',
+        axisTitle: 'Throughput speedup',
         axisClass: 'ct-axis-title',
         offset: {
           x: 0,
@@ -156,4 +203,52 @@ var plotOptions = {
   ]
 };
 
-new Chartist.Line('.ct-chart', data, plotOptions);
+var timePlotOptions = $.extend(true, {}, plotOptions);
+timePlotOptions.plugins[2] = Chartist.plugins.ctAxisTitle({
+  axisX: {
+    axisTitle: 'Number of Workers',
+    axisClass: 'ct-axis-title',
+    offset: {
+      x: 0,
+      y: 40
+    },
+    textAnchor: 'middle'
+  },
+  axisY: {
+    axisTitle: 'Time per mini-batch (ms)',
+    axisClass: 'ct-axis-title',
+    offset: {
+      x: 0,
+      y: 10
+    },
+    textAnchor: 'middle',
+    flipTitle: true
+  }
+});
+
+var costPlotOptions = $.extend(true, {}, plotOptions);
+costPlotOptions.plugins[2] = Chartist.plugins.ctAxisTitle({
+  axisX: {
+    axisTitle: 'Number of Workers',
+    axisClass: 'ct-axis-title',
+    offset: {
+      x: 0,
+      y: 40
+    },
+    textAnchor: 'middle'
+  },
+  axisY: {
+    axisTitle: 'Cost (USD)',
+    axisClass: 'ct-axis-title',
+    offset: {
+      x: 0,
+      y: 10
+    },
+    textAnchor: 'middle',
+    flipTitle: true
+  }
+});
+
+new Chartist.Line('.ct-chart-speedup', data, plotOptions);
+new Chartist.Line('.ct-chart-time', data, timePlotOptions);
+new Chartist.Line('.ct-chart-cost', data, costPlotOptions);

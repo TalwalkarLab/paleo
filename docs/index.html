@@ -63,17 +63,17 @@
                   </div>
                 </div>
                 <hr>
-                <!-- <div class="control-group">
+                <div class="control-group">
                   <div class="control">
                     <label class="select-label" for="paleo-input__cloud">Cloud</label>
                     <div class="select">
                       <select id="paleo-input__cloud">
-                        <option value="awsp2">AWS EC2 P2 Instances</option>
-                        <option value="customize" selected>Customize</option>
+                        <option value="awsp2" selected>AWS EC2 P2 Instances</option>
+                        <option value="none">Customize</option>
                       </select>
                     </div>
                   </div>
-                </div> -->
+                </div>
                 <div class="control-group">
                   <div class="control">
                     <label class="select-label" for="paleo-input__device">Device</label>
@@ -137,7 +137,7 @@
                   <div class="control">
                     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
                       <input class="mdl-textfield__input" type="text" pattern="-?[0-9]*" id="paleo-input__nepoch" value="20">
-                      <label class="mdl-textfield__label" for="paleo-input__nepoch">Epoch</label>
+                      <label class="mdl-textfield__label" for="paleo-input__nepoch">Epochs</label>
                       <span class="mdl-textfield__error">Must be an integer</span>
                     </div>
                   </div>
@@ -161,26 +161,42 @@
                   </button>
                 </div>
               </div>
+              <div class="paleo-info-panel">
+                <div class="paleo-panel-title mdl-typography--title mdl-typography--font-thin"></div>
+                <p></p>
+              </div>
             </div>
 
             <div class="mdl-cell paleo-panel-right">
               <div class="paleo-result-panel">
                 <div class="paleo-panel-title mdl-typography--title mdl-typography--font-thin">Paleo Estimation</div>
                 <div class="paleo-plot-container">
-                  <div class="ct-chart paleo-plot"></div>
-                  <!-- <div id="myDiv" class="paleo-plot" style="width: 500px; height: 300px;"></div> -->
+                  <div class="paleo-plot-title mdl-typography--title">Estimated Scalability</div>
+                  <p>Speedup in throughput (images/sec) per mini-batch relative to one worker.</p>
+                  <div class="ct-chart-speedup paleo-plot"></div>
+                </div>
+                <div class="paleo-plot-container">
+                  <div class="paleo-plot-title mdl-typography--title">Estimated Runtime per Mini-Batch</div>
+                  <p>Total time of forward pass, backward pass, and weights update per mini-batch. </p>
+                  <div class="ct-chart-time paleo-plot"></div>
+                </div>
+                <div class="paleo-plot-container">
+                  <div class="paleo-plot-title mdl-typography--title">Estimated Cost</div>
+                  <p>Cost for running a fixed number of epochs. Only support AWS EC2 P2 instances for now.</p>
+                  <div class="ct-chart-cost paleo-plot"></div>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
 
         <footer class="paleo-footer mdl-mini-footer">
           <div class="paleo-footer-content mdl-mini-footer__left-section">
-              <ul class="mdl-mini-footer__link-list">
-                <li>&copy; 2016</li>
-                <li><a href="https://github.com/TalwalkarLab/paleo" target="_blank">View on Github</a></li>
-              </ul>
+            <ul class="mdl-mini-footer__link-list">
+              <li>&copy; 2016</li>
+              <li><a href="https://github.com/TalwalkarLab/paleo" target="_blank">View on Github</a></li>
+            </ul>
           </div>
         </footer>
       </div>

@@ -105,6 +105,7 @@ a img{
     width: 420px;
     display: inline-block;
     margin: 0 10px;
+    border-right: 1px solid #ddd;
   }
 
   .paleo-playground-section .paleo-panel-right {
@@ -115,7 +116,8 @@ a img{
   }
 
   .paleo-playground-section .paleo-panel-title {
-    padding: 20px 0;
+    padding: 10px 0;
+    margin: 10px 0;
     text-transform: uppercase;
   }
 
@@ -123,7 +125,6 @@ a img{
   position: relative;
   padding-left: 0px;
   padding-right: 10px;
-  border-right: 1px solid #ddd;
 }
 
   .paleo-config-panel hr{
@@ -224,12 +225,21 @@ a img{
     width: 170px;
   }
 
+.paleo-info-panel {
+  margin: 20px 0;
+}
+
 .paleo-result-panel {
   position: relative;
 }
 
   .paleo-result-panel .paleo-plot-container {
+    margin: 10px auto;
+  }
+
+  .paleo-result-panel .paleo-plot-title {
     margin: 0 auto;
+    font-size: 18px;
   }
 
   .paleo-result-panel .paleo-plot {
