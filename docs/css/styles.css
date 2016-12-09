@@ -224,6 +224,17 @@ a img{
     width: 170px;
   }
 
+.paleo-faq-panel {
+  margin-top: 100px;
+  margin-bottom: 50px;
+}
+
+  .paleo-faq-panel p{
+    font-size: 14px;
+    margin: 10px 0;
+    line-height: 20px;
+  }
+
 .paleo-info-panel {
   margin-top: 100px;
 }
