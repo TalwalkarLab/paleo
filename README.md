@@ -1,9 +1,11 @@
 # Paleo
 
-Paleo is an analytical performance modeling tool for deep neural networks. It
-can be used to
+Paleo is an analytical model to estimate the scalability and performance of deep learning systems.
+It can be used to
   - efficiently explore the space of scalable deep learning systems,
   - quickly diagnose their eﬀectiveness for a given problem instance.
+
+[Live demo](https://talwalkarlab.github.io/paleo/)
 
 ## Dependencies
 
