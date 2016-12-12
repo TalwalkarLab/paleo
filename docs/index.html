@@ -54,7 +54,7 @@
                   <div class="control">
                     <label class="select-label" for="paleo-input__model">Model Architecture<sup>1</sup></label>
                     <div class="select">
-                      <select id="paleo-input__model">
+                      <select id="paleo-input__model" class="paleo-input-knob">
                         <option value="inception_v3" selected>Inception v3</option>
                         <option value="alex_v2">AlexNet v2</option>
                         <option value="nin">NiN</option>
@@ -67,7 +67,7 @@
                   <div class="control">
                     <label class="select-label" for="paleo-input__cloud">Cloud</label>
                     <div class="select">
-                      <select id="paleo-input__cloud">
+                      <select id="paleo-input__cloud" class="paleo-input-knob">
                         <option value="awsp2" selected>AWS EC2 P2 Instances</option>
                         <option value="none">Customize</option>
                       </select>
@@ -78,7 +78,7 @@
                   <div class="control">
                     <label class="select-label" for="paleo-input__device">Device</label>
                     <div class="select">
-                      <select id="paleo-input__device">
+                      <select id="paleo-input__device" class="paleo-input-knob">
                         <option value="K20">NVIDIA K20 GPU</option>
                         <option value="K40">NVIDIA K40 GPU</option>
                         <option value="K80" selected>NVIDIA K80 GPU</option>
@@ -89,7 +89,7 @@
                   <div class="control">
                     <label class="select-label" for="paleo-input__network">Network<sup>2</sup></label>
                     <div class="select">
-                      <select id="paleo-input__network">
+                      <select id="paleo-input__network" class="paleo-input-knob">
                         <option value="ethernet">Ethernet (10 Gbps)</option>
                         <option value="ethernet20" selected>Ethernet (20 Gbps)</option>
                         <option value="infiniband">Infiniband (70 Gbps)</option>
@@ -102,7 +102,7 @@
                   <div class="control">
                     <label class="select-label" for="paleo-input__software">Software</label>
                     <div class="select">
-                      <select id="paleo-input__software">
+                      <select id="paleo-input__software" class="paleo-input-knob">
                         <option value="caffe">Caffe</option>
                         <option value="mxnet">MXNet</option>
                         <option value="tensorflow" selected>TensorFlow</option>
@@ -111,7 +111,7 @@
                   </div>
                   <div class="control">
                     <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="paleo-input__use_cudnn">
-                      <input type="checkbox" id="paleo-input__use_cudnn" class="mdl-switch__input" checked>
+                      <input type="checkbox" id="paleo-input__use_cudnn" class="mdl-switch__input paleo-input-knob" checked>
                       <span class="mdl-switch__label paleo-control-label">Use cuDNN</span>
                     </label>
                   </div>
@@ -120,7 +120,7 @@
                   <div class="control">
                       <label class="select-label" for="paleo-input__batch_size_power">Batch size: <span id="paleo-input__batch_size"></span></label>
                       <p class="paleo-slider">
-                        <input class="mdl-slider mdl-js-slider" id="paleo-input__batch_size_power" type="range"
+                        <input class="mdl-slider mdl-js-slider paleo-input-knob" id="paleo-input__batch_size_power" type="range"
                           min="7" max="10" value="8" tabindex="0">
                       </p>
                   </div>
@@ -129,14 +129,14 @@
                 <div class="control-group">
                   <div class="control">
                     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                      <input class="mdl-textfield__input" type="text" pattern="-?[0-9]*" id="paleo-input__dataset_size" value="1200000">
+                      <input class="mdl-textfield__input paleo-input-knob" type="text" pattern="-?[0-9]*" id="paleo-input__dataset_size" value="1200000">
                       <label class="mdl-textfield__label" for="paleo-input__dataset_size">Dataset size</label>
                       <span class="mdl-textfield__error">Must be an integer</span>
                     </div>
                   </div>
                   <div class="control">
                     <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-                      <input class="mdl-textfield__input" type="text" pattern="-?[0-9]*" id="paleo-input__nepoch" value="20">
+                      <input class="mdl-textfield__input paleo-input-knob" type="text" pattern="-?[0-9]*" id="paleo-input__nepoch" value="20">
                       <label class="mdl-textfield__label" for="paleo-input__nepoch">Epochs</label>
                       <span class="mdl-textfield__error">Must be an integer</span>
                     </div>
@@ -145,21 +145,21 @@
                 <hr>
                 <div class="control-group">
                   <label class="control mdl-radio mdl-js-radio mdl-js-ripple-effect" for="paleo-input__scaling_weak">
-                    <input type="radio" id="paleo-input__scaling_weak" class="mdl-radio__button" name="paleo-input__scaling" value="weak" checked>
+                    <input type="radio" id="paleo-input__scaling_weak" class="mdl-radio__button paleo-input-knob" name="paleo-input__scaling" value="weak" checked>
                     <span class="mdl-radio__label paleo-control-label">Weak scaling</span>
                   </label>
                   <label class="control mdl-radio mdl-js-radio mdl-js-ripple-effect" for="paleo-input__scaling_strong">
-                    <input type="radio" id="paleo-input__scaling_strong" class="mdl-radio__button" name="paleo-input__scaling" value="strong">
+                    <input type="radio" id="paleo-input__scaling_strong" class="mdl-radio__button paleo-input-knob" name="paleo-input__scaling" value="strong">
                     <span class="mdl-radio__label paleo-control-label">Strong scaling</span>
                   </label>
                   <div id="paleo-control-info__weak" class="paleo-control-info">The effective batch size of SGD grows as the number of workers increases.</div>
                   <div id="paleo-control-info__strong" class="paleo-control-info">Equivalent to serial SGD on a single worker. Each worker computes with (batch size / # workers) training examples.</div>
                 </div>
-                <div class="paleo-submit">
+                <!-- <div class="paleo-submit">
                   <button id="paleo-submit-btn" class="mdl-button mdl-js-button  mdl-button--raised mdl-button--primary mdl-button--colored mdl-js-ripple-effect">
                     Estimate
                   </button>
-                </div>
+                </div> -->
               </div>
               <div class="paleo-faq-panel">
                 <div class="paleo-panel-title mdl-typography--title mdl-typography--font-thin">How does it work?</div>
@@ -186,8 +186,8 @@
                   <div class="ct-chart-speedup paleo-plot"></div>
                 </div>
                 <div class="paleo-plot-container">
-                  <div class="paleo-plot-title mdl-typography--title">Estimated Runtime per Mini-Batch</div>
-                  <p>Total time of forward pass, backward pass, and weights update per mini-batch. </p>
+                  <div class="paleo-plot-title mdl-typography--title">Estimated Training Time</div>
+                  <p>Total time of forward pass, backward pass, and weights update for the given epochs. </p>
                   <div class="ct-chart-time paleo-plot"></div>
                 </div>
                 <div class="paleo-plot-container">
@@ -221,6 +221,7 @@
     <script src="js/chartist-plugin-axistitle.min.js"></script>
     <script src="js/chartist-plugin-legend.js"></script>
     <script src="js/chartist-plugin-tooltip.min.js"></script>
+    <script src="js/chartist-logaxis-patch.js"></script>
 
     <script src="js/paleo.js"></script>
     <script>

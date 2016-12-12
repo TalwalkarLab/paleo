@@ -53,6 +53,9 @@ $(document).ready(function(){
   }).fail(function() {
     console.error('Cannot load precomputed results.');
   });
+
+  // Auto submit.
+  $('.paleo-input-knob').change(onSubmit);
 });
 
 function inputsToKey(paleoInputs){
@@ -97,11 +100,15 @@ function onPaleoSuccess(data) {
 
   // Time plot
   var seriesTime = [];
+  var datasetSize = parseFloat($('#paleo-input__dataset_size').val());
+  var nepoch = parseFloat($('#paleo-input__nepoch').val());
+  var batch_size = parseFloat($('#paleo-input__batch_size').html());
+  var iterations = datasetSize / batch_size * nepoch;
   for (var i = 0; i < data.times.length; i++) {
     seriesTime.push(data.times[i].map(function(t){
-      var timePerBatch = Math.round(t);
-      var meta = [commNames[i], timePerBatch.toLocaleString() + " ms"].join(';');
-      return {meta: meta, value: timePerBatch};
+      var timeInHour = Math.ceil(iterations * t / 1000 / 3600);
+      var meta = [commNames[i], timeInHour.toLocaleString() + " hours"].join(';');
+      return {meta: meta, value: timeInHour};
     }));
   }
   new Chartist.Line('.ct-chart-time',
@@ -111,10 +118,6 @@ function onPaleoSuccess(data) {
   var seriesCost = [];
   var cloud = $('#paleo-input__cloud').val();
   if (cloud == 'awsp2') {
-    var datasetSize = parseFloat($('#paleo-input__dataset_size').val());
-    var nepoch = parseFloat($('#paleo-input__nepoch').val());
-    var batch_size = parseFloat($('#paleo-input__batch_size').html());
-    var iterations = datasetSize / batch_size * nepoch;
     for (var i = 0; i < data.times.length; i++) {
       seriesCost.push(data.times[i].map(function(t, index){
         var timeInHour = Math.ceil(iterations * t / 1000 / 3600);
@@ -168,7 +171,9 @@ var plotOptions = {
     left: 20
   },
   axisY: {
-    onlyInteger: true
+    onlyInteger: true,
+    // type: Chartist.AutoScaleAxis,
+    // scale: 'log10',
   },
   plugins: [
     Chartist.plugins.tooltip({
@@ -215,7 +220,7 @@ timePlotOptions.plugins[2] = Chartist.plugins.ctAxisTitle({
     textAnchor: 'middle'
   },
   axisY: {
-    axisTitle: 'Time per mini-batch (ms)',
+    axisTitle: 'Training time (hours)',
     axisClass: 'ct-axis-title',
     offset: {
       x: 0,
