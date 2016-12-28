@@ -73,3 +73,20 @@ class BaseLayer(object):
     def num_params(self):
         """Returns the number of trainable parameters in this layer."""
         return 0
+
+
+class Generic(BaseLayer):
+    """Estimator for Generic layers. """
+
+    def __init__(self, name, inputs, type):
+        """Initialize estimator. """
+        super(Generic, self).__init__(name, 'generic_{}'.format(type))
+        self._inputs = inputs
+        self._outputs = list(self._inputs)
+
+    def additional_summary(self):
+        return 'Generic layer: %s' % self._layertype
+
+    def memory_in_bytes(self):
+        """Returns weights."""
+        return 0

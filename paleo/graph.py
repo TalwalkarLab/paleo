@@ -21,7 +21,9 @@ class LayerSpec(object):
         self.name = layer_name
         self.params = dict(layer_params)
         self.layer_op = None
-        self.parents = []
+        self.parents = []  # TODO: deprecate this property.
+        self.inbounds = []
+        self.outbounds = []
 
     def attach_op(self, layer_op):
         self.layer_op = layer_op
@@ -50,12 +52,11 @@ class LayerSpec(object):
 class OperationGraph(object):
     """The dependency graph of operations in the DNN."""
 
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, attach_ops=True):
         super(OperationGraph, self).__init__()
-        self.in_degree = defaultdict(int)
-        self.adj_list = defaultdict(list)
         self.nested_list = None
-        self._topolopy_order = None
+        self._topological_order = None
+        self.attach_ops = attach_ops
         if filename:
             self.load(filename)
 
@@ -80,13 +81,15 @@ class OperationGraph(object):
 
     @property
     def topology_order(self):
-        return self._topolopy_order
+        return self._topological_order
 
-    def _create_toplogy_order(self):
+    def _create_topology_order(self):
         """
         Expand the network to a plain list.
         The list is in topology order.
         """
+        logger.debug('Creating topological order of layers '
+                     'based on the nested list representation.')
 
         def flatten(layer):
             if isinstance(layer, (tuple, list)):
@@ -97,23 +100,27 @@ class OperationGraph(object):
             else:
                 return [layer]
 
-        if self._topolopy_order is None:
-            self._topolopy_order = []
+        if self._topological_order is None:
+            self._topological_order = []
             for layer in self.nested_list:
-                self._topolopy_order.extend(flatten(layer))
+                self._topological_order.extend(flatten(layer))
 
     def _attach_layer_op(self):
         """Flatten the list in topology order."""
-        names_to_layers = dict()
+        names_to_specs = dict()
         for layer_spec in self.topology_order:
             if len(layer_spec['parents']) == 1:
                 parent_name = layer_spec['parents'][0]
-                inputs = names_to_layers[parent_name].layer_op.outputs
+                inputs = names_to_specs[parent_name].layer_op.outputs
             else:
                 inputs = []
-                for parent_name in layer_spec['parents']:
-                    inputs.append(names_to_layers[
-                        parent_name].layer_op.outputs)
+                try:
+                    for parent_name in layer_spec['parents']:
+                        inputs.append(names_to_specs[
+                            parent_name].layer_op.outputs)
+                except KeyError:
+                    raise KeyError('Cannot find parent "%s" of "%s"' %
+                                   (parent_name, layer_spec.name))
 
             layer = None
             if layer_spec['type'] == 'Input':
@@ -150,30 +157,30 @@ class OperationGraph(object):
             elif layer_spec['type'] == 'Concatenate':
                 layer = layers.Concatenate(layer_spec.name, inputs,
                                            layer_spec['dim'])
+            elif layer_spec['type'] == 'Elementwise':
+                layer = layers.Elementwise(layer_spec.name, inputs)
             elif layer_spec['type'] == 'Softmax':
                 layer = layers.Softmax(layer_spec.name, inputs,
-                                       layer_spec['num_classes'])
+                                       layer_spec.get('num_classes', None))
             else:
-                raise ValueError('Cannot create layer object for %s,'
-                                 '%s is an unknown layer type.' %
-                                 (layer_spec.name, layer_spec['type']))
+                layer = layers.Generic(layer_spec.name, inputs,
+                                       layer_spec['type'])
+            #  else:
+            #      raise ValueError('Cannot create layer object for %s,'
+            #                       '%s is an unknown layer type.' %
+            #                       (layer_spec.name, layer_spec['type']))
             if layer:
-                logger.debug('%s inputs: %s  ouputs: %s' %
+                logger.debug('Attach layer op: %s inputs: %s  ouputs: %s' %
                              (layer.name, layer.inputs, layer.outputs))
-                layer_spec.parents.extend([names_to_layers[p]
+                layer_spec.parents.extend([names_to_specs[p]
                                            for p in layer_spec['parents']])
                 layer.parents = layer_spec['parents']
                 layer_spec.attach_op(layer)
-                names_to_layers[layer_spec.name] = layer_spec
+                names_to_specs[layer_spec.name] = layer_spec
 
     def _create_graph(self, net):
-        # Convert JSON into a graph
-        in_degree = defaultdict(int)
-        adj_list = defaultdict(list)
-
-        nodes = dict()  # layer_name -> LayerSpec object
+        names_to_specs = dict()  # layer_name -> LayerSpec object
         # Shortcuts, allow use block_name as parent.
-        # endpoint will be used instead.
         block_endpoints = dict()
 
         # This dictionary records how many splits each end_point name has.
@@ -194,7 +201,7 @@ class OperationGraph(object):
                 elif '@self' in parent_name:
                     parent_name = parent_name.replace('@self', '')
                     assert parent_name in layernames_to_splits, (
-                        'Parent %s is not splited.')
+                        'Parent %s is not split.')
                     transformed_parents.append(
                         block_endpoints.get(parent_name, parent_name) + '@%d' %
                         current_split)
@@ -212,14 +219,14 @@ class OperationGraph(object):
                     layernames_to_splits['%s/%s' % (
                         block_name, sublayer_name)] = num_splits
 
-        # Transform all layers into a LayerSpec object.
+        # Transform all specs into LayerSpec objects.
         for layer_name, layer_params in net['layers'].items():
             if layer_params.get('type', None) in ['Block', 'ModelParallel']:
                 is_model_parallel = (layer_params['type'] == 'ModelParallel')
                 block_name = layer_name
                 block_parents = _parents(layer_params['parents'])
 
-                # For model paralle, we repeat the specified layers K times.
+                # For model parallel, the specified layers are repeated K times.
                 num_splits = layer_params.get('splits', 1)
 
                 for s in range(num_splits):
@@ -234,8 +241,10 @@ class OperationGraph(object):
 
                         # Update parents
                         if len(sublayer_params['parents']) == 0:
+                            # Use the parent of the block.
                             sublayer_parents = block_parents
                         else:
+                            # Add blockname to the parent names.
                             sublayer_parents = map(
                                 lambda n: '%s/%s' % (block_name, n),
                                 sublayer_params['parents'])
@@ -243,9 +252,9 @@ class OperationGraph(object):
 
                         sublayer.params['parents'] = sublayer_parents
 
-                        assert sublayer_name not in nodes, ('Duplicate %s' %
-                                                            sublayer_name)
-                        nodes[sublayer_name] = sublayer
+                        assert sublayer_name not in names_to_specs, (
+                            'Duplicate %s' % sublayer_name)
+                        names_to_specs[sublayer_name] = sublayer
 
                 # If block provides an endpoint, subsequent layers can
                 # refer to the block name as parent.
@@ -255,77 +264,82 @@ class OperationGraph(object):
             else:
                 layer_params['parents'] = _parents(layer_params['parents'])
                 layer = LayerSpec(layer_name, layer_params)
-                assert layer_name not in nodes, ('Duplicate %s' % layer_name)
-                nodes[layer_name] = layer
+                assert layer_name not in names_to_specs, ('Duplicate %s' %
+                                                          layer_name)
+                names_to_specs[layer_name] = layer
 
         # Add edges.
-        for layer_name, layer_spec in nodes.items():
-            # add edges to the adjacent list.
+        for layer_name, layer_spec in names_to_specs.items():
             for parent_name in layer_spec['parents']:
-                adj_list[nodes[parent_name]].append(nodes[layer_name])
-                in_degree[nodes[layer_name]] += 1
+                assert parent_name in names_to_specs, (
+                    'Parent layer %s of %s '
+                    ' does not have a LayerSpec object.' % (parent_name,
+                                                            layer_name))
+                names_to_specs[parent_name].outbounds.append(layer_spec)
+                layer_spec.inbounds.append(names_to_specs[parent_name])
 
-        self.in_degree = in_degree
-        self.adj_list = adj_list
-        self.nested_list = self.net_graph(nodes['data'], in_degree, adj_list)
-        self._create_toplogy_order()
-        self._attach_layer_op()
+        graphwalker = GraphWalker(names_to_specs)
+        self.nested_list = graphwalker.start(names_to_specs['data'])
+        self._create_topology_order()
+        logger.debug(self.nested_list)
+        logger.debug(self._topological_order)
+        if self.attach_ops:
+            self._attach_layer_op()
 
-    def net_graph(self, starting_node, in_degree, adj_list):
-        self.in_degree = in_degree
-        self.adj_list = adj_list
 
-        # Find all bottleneck nodes, i.e in degree >= 2.
-        bottlenecks = set([node for node in self.in_degree
-                           if self.in_degree[node] >= 2])
+class GraphWalker(object):
+    def __init__(self, names_to_nodes):
+        self.names_to_nodes = names_to_nodes
+        self.indegrees = dict()
+        self.joints = set()
+        for node in names_to_nodes.values():
+            self.indegrees[node] = len(node.inbounds)
+            if self.indegrees[node] > 1:
+                self.joints.add(node)
 
-        # Building the graph from the starting nodes
-        layer_list, end = self.net_graph_dfs([], [starting_node], bottlenecks)
-        return layer_list
+    def start(self, starting_node):
+        nested_list, _ = self.nested_list_till_joints([], [starting_node])
+        return nested_list
 
-    def net_graph_dfs(self, history, frontiers, bottlenecks):
+    def nested_list_till_joints(self, history, frontiers):
+        """Returns current history and encountered joint"""
         if len(frontiers) == 0:
-            # Done when where are no nodes to explore
             return history, []
 
+        # If all frontiers are joints, stop DFS.
+        # The returned path does not include the joints.
+        all_joints = True
+        for node in frontiers:
+            all_joints = all_joints and (node in self.joints)
+        if all_joints:
+            return history, frontiers
+
         if len(frontiers) == 1:
-            layer = frontiers[0]
-            # Stop DFS if hit a bottleneck.
-            if layer in bottlenecks:
-                return history, [layer]
+            # Simply chain the layer and continue
+            history.append(node)
+            for x in node.outbounds:
+                assert self.indegrees[x] > 0
+                self.indegrees[x] -= 1
+            frontiers = node.outbounds
+            return self.nested_list_till_joints(history, frontiers)
+        else:
+            # When the frontier has more than one nodes, we explore from each
+            # frontier individually until they reach a common joint.
+            supernode = []
+            merged_joints = set()
+            for node in frontiers:
+                # The search will stop at joints.
+                sub_list, joints = self.nested_list_till_joints([], [node])
+                if len(sub_list) > 0:
+                    supernode.append(sub_list)
+                for joint in joints:
+                    if self.indegrees[joint] == 0:
+                        merged_joints.add(joint)
+            if len(supernode) > 0:
+                history.append(tuple(supernode))
 
-            # simply chain the layer
-            history.append(layer)
-
-            # continue
-            frontiers = [child for child in self.adj_list[layer]]
-            return self.net_graph_dfs(history, frontiers, bottlenecks)
-
-        encounter_bottlenecks, bns = False, []
-        for node in frontiers:
-            if node in bottlenecks:
-                bns.append(node)
-                encounter_bottlenecks = True
-        if encounter_bottlenecks:
-            return history, bns
-
-        supernode = []
-        encountered_bottlenecks = []
-        for node in frontiers:
-            # the search will stop at bottlenecks
-            # Now we assume they stop at the same bottleneck
-            sub_chain, bns = self.net_graph_dfs([], [node], bottlenecks)
-            supernode.append(sub_chain)
-            encountered_bottlenecks.extend(bns)
-        history.append(tuple(supernode))
-
-        # Encountered bottlenecks becomes the new frontiers.
-        encountered_bottlenecks = list(set(encountered_bottlenecks))
-
-        # Remove bottlenecks
-        for bn in encountered_bottlenecks:
-            if bn in bottlenecks:
-                bottlenecks.remove(bn)
-
-        frontiers = encountered_bottlenecks
-        return self.net_graph_dfs(history, frontiers, bottlenecks)
+            # Reached joints becomes the new frontiers.
+            for joint in merged_joints:
+                self.joints.remove(joint)
+            frontiers = list(merged_joints)
+            return self.nested_list_till_joints(history, frontiers)

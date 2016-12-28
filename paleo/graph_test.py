@@ -11,7 +11,7 @@ import graph
 
 class GraphTest(unittest.TestCase):
     def setUp(self):
-        self.graph = graph.OperationGraph()
+        self.graph = graph.OperationGraph(attach_ops=False)
         pass
 
     def tearDown(self):
@@ -59,6 +59,26 @@ class GraphTest(unittest.TestCase):
         self.graph.load_from_string(two_towers)
         self.assertEqual(
             str(self.graph.nested_list), "[data, ([conv2], [conv1]), output]")
+
+    def test_dependency2(self):
+        two_towers = """{
+            "name" : "test",
+            "layers" : {
+                "data": {
+                    "parents": []
+                },
+                "conv1": {
+                    "parents": ["data"]
+                },
+                "output": {
+                    "parents" : ["data", "conv1"]
+                }
+            }
+        }
+        """
+        self.graph.load_from_string(two_towers)
+        self.assertEqual(
+            str(self.graph.nested_list), "[data, ([conv1],), output]")
 
     def test_block(self):
         two_towers = """{

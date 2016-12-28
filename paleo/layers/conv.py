@@ -27,6 +27,8 @@ class Conv2d(base.BaseLayer):
         super(Conv2d, self).__init__(name, 'conv2d')
         self._inputs = list(inputs)
         self._filters = list(filters)
+        if self._filters[2] == -1:
+            self._filters[2] = self._inputs[3]
         self._strides = list(strides)
         self._padding = padding
         if splits is not None:
