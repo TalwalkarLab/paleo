@@ -38,15 +38,19 @@ To reproduce experiments presented in our paper submission:
 **Model Architectures**
 
 Paleo uses a special json format to for model architecture specification.
-Predefined architectures can be found under `nets/` directory.
+Predefined architectures can be found under the [nets/](nets/) directory.
+Paleo also provides a convertor for Caffe prototxt format
+(see [nets/caffe/](nets/caffe/) for details).
 
-| Model Architecture  | Files               |
-| ------------------- | ------------------  |
-| AlexNet v2          | `alex_v2.json`      |
-| Inception v3        | `inception_v3.json` |
-| NiN                 | `nin.json`          |
-| Overfeat            | `overfeat.json`     |
-| VGG-16              | `vgg16.json`        |
+- AlexNet v2
+- Inception v3
+- NiN
+- Overfeat
+- VGG-16
+- ResNet-50 (from Caffe spec)
+- DenseNet (from Caffe spec)
+
+
 
 **Hardware**
 
