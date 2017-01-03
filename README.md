@@ -37,9 +37,9 @@ To reproduce experiments presented in our paper submission:
 
 **Model Architectures**
 
-Paleo uses a special json format to for model architecture specification.
-Predefined architectures can be found under the [nets/](nets/) directory.
-Paleo also provides a convertor for Caffe prototxt format
+Paleo uses a [special json format](nets/README.md) to for model architecture
+specification. Predefined architectures can be found under the [nets/](nets/)
+directory. Paleo also provides a convertor for Caffe prototxt format
 (see [nets/caffe/](nets/caffe/) for details).
 
 - AlexNet v2
