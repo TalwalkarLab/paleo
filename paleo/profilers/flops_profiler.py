@@ -29,6 +29,8 @@ class FlopsProfiler(BaseProfiler):
         time = TimeMeasure()
         if layer.layertype == 'conv2d':
             time += self._profile_conv2d(layer)
+        if layer.layertype == 'innerproduct':
+            time += self._profile_innerproduct(layer)
         elif layer.layertype == 'pool2d':
             time += self._profile_pool2d(layer)
         elif layer.layertype == 'dropout':
@@ -89,6 +91,39 @@ class FlopsProfiler(BaseProfiler):
         else:
             time_in_ms /= ppp
         return max(clock_time_in_ms, time_in_ms)
+
+    def _profile_innerproduct(self, layer):
+        def _innerproduct(X, W, Y):
+            assert X[-1] == W[0], ("Shape mismatch: {}x{}={}".format(X, W, Y))
+            flops = 2 * np.prod(X) * W[-1]
+            comm_time = self._estimate_comm_time(np.prod(X) * _BYTES_FLOAT)
+            comm_time += self._estimate_comm_time(np.prod(W) * _BYTES_FLOAT)
+            comm_time += self._estimate_comm_time(np.prod(Y) * _BYTES_FLOAT)
+            comp_time = self._estimate_comp_time(flops)
+            return TimeMeasure(comp_time=comp_time, comm_time=comm_time)
+
+        def _transpose_shape(X):
+            return [X[1], X[0]]
+
+        if self.options.direction == 'backward':
+            t_data = TimeMeasure()
+            t_filter = TimeMeasure()
+            assert self.options.gradient_wrt is None or (
+                self.options.gradient_wrt in ('data', 'filter'))
+            if (not self.options.gradient_wrt or
+                    self.options.gradient_wrt == 'data'):
+                t_data = _innerproduct(layer.outputs,
+                                       _transpose_shape(layer.weights),
+                                       layer.inputs)
+            if (not self.options.gradient_wrt or
+                    self.options.gradient_wrt == 'filter'):
+                t_filter = _innerproduct(
+                    _transpose_shape(layer.inputs), layer.outputs,
+                    layer.weights)
+                t_filter = self._profile_conv2d_backprop_filter(layer)
+            return t_data + t_filter
+
+        return _innerproduct(layer.inputs, layer.weights, layer.outputs)
 
     def _profile_conv2d(self, layer):
         if self.options.direction == 'backward':

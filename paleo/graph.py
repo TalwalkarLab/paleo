@@ -122,53 +122,63 @@ class OperationGraph(object):
                     raise KeyError('Cannot find parent "%s" of "%s"' %
                                    (parent_name, layer_spec.name))
 
-            layer = None
-            if layer_spec['type'] == 'Input':
-                layer = layers.Input(layer_spec.name, layer_spec['tensor'])
-            elif layer_spec['type'] == 'Convolution':
-                layer = layers.Conv2d(
-                    layer_spec.name,
-                    inputs,
-                    layer_spec['filter'],
-                    layer_spec['strides'],
-                    layer_spec['padding'],
-                    backprop=('data' not in layer_spec['parents']),
-                    activation_fn=layer_spec.get('activation_fn', 'relu'),
-                    splits=layer_spec.get('splits', None))
-            elif layer_spec['type'] == 'Pooling':
-                layer = layers.Pool2d(
-                    layer_spec.name,
-                    inputs,
-                    layer_spec['ksize'],
-                    layer_spec['strides'],
-                    layer_spec['padding'],
-                    pool_type='max')
-            elif layer_spec['type'] == 'AvgPool':
-                layer = layers.Pool2d(
-                    layer_spec.name,
-                    inputs,
-                    layer_spec['ksize'],
-                    layer_spec['strides'],
-                    layer_spec['padding'],
-                    pool_type='avg')
-            elif layer_spec['type'] == 'Dropout':
-                layer = layers.Dropout(layer_spec.name, inputs,
-                                       layer_spec['dropout_keep_prob'])
-            elif layer_spec['type'] == 'Concatenate':
-                layer = layers.Concatenate(layer_spec.name, inputs,
-                                           layer_spec['dim'])
-            elif layer_spec['type'] == 'Elementwise':
-                layer = layers.Elementwise(layer_spec.name, inputs)
-            elif layer_spec['type'] == 'Softmax':
-                layer = layers.Softmax(layer_spec.name, inputs,
-                                       layer_spec.get('num_classes', None))
-            else:
-                layer = layers.Generic(layer_spec.name, inputs,
-                                       layer_spec['type'])
-            #  else:
-            #      raise ValueError('Cannot create layer object for %s,'
-            #                       '%s is an unknown layer type.' %
-            #                       (layer_spec.name, layer_spec['type']))
+            try:
+                layer = None
+                if layer_spec['type'] == 'Input':
+                    layer = layers.Input(layer_spec.name, layer_spec['tensor'])
+                elif layer_spec['type'] == 'Convolution':
+                    layer = layers.Conv2d(
+                        layer_spec.name,
+                        inputs,
+                        layer_spec['filter'],
+                        layer_spec['strides'],
+                        layer_spec['padding'],
+                        backprop=('data' not in layer_spec['parents']),
+                        activation_fn=layer_spec.get('activation_fn', 'relu'),
+                        splits=layer_spec.get('splits', None))
+                elif layer_spec['type'] == 'Pooling':
+                    layer = layers.Pool2d(
+                        layer_spec.name,
+                        inputs,
+                        layer_spec['ksize'],
+                        layer_spec['strides'],
+                        layer_spec['padding'],
+                        pool_type='max')
+                elif layer_spec['type'] == 'AvgPool':
+                    layer = layers.Pool2d(
+                        layer_spec.name,
+                        inputs,
+                        layer_spec['ksize'],
+                        layer_spec['strides'],
+                        layer_spec['padding'],
+                        pool_type='avg')
+                elif layer_spec['type'] == 'Dropout':
+                    layer = layers.Dropout(layer_spec.name, inputs,
+                                           layer_spec['dropout_keep_prob'])
+                elif layer_spec['type'] == 'Concatenate':
+                    layer = layers.Concatenate(layer_spec.name, inputs,
+                                               layer_spec['dim'])
+                elif layer_spec['type'] == 'Elementwise':
+                    layer = layers.Elementwise(layer_spec.name, inputs)
+                elif layer_spec['type'] == 'Softmax':
+                    layer = layers.Softmax(layer_spec.name, inputs,
+                                           layer_spec.get('num_classes', None))
+                elif layer_spec['type'] == 'InnerProduct':
+                    layer = layers.InnerProduct(layer_spec.name, inputs,
+                                                layer_spec['num_outputs'])
+                else:
+                    layer = layers.Generic(layer_spec.name, inputs,
+                                           layer_spec['type'])
+                #  else:
+                #      raise ValueError('Cannot create layer object for %s,'
+                #                       '%s is an unknown layer type.' %
+                #                       (layer_spec.name, layer_spec['type']))
+            except Exception as e:
+                logger.error('Error when attaching ops for layer %s' %
+                             layer_spec.name)
+                logger.exception(e)
+                exit()
+
             if layer:
                 logger.debug('Attach layer op: %s inputs: %s  ouputs: %s' %
                              (layer.name, layer.inputs, layer.outputs))

@@ -46,7 +46,8 @@ class CaffeConvertor(object):
     def __init__(self):
         self._LAYER_TYPE_MAPPING = {'Eltwise': 'Elementwise',
                                     'Data': 'Input',
-                                    'Concat': 'Concatenate'}
+                                    'Concat': 'Concatenate',
+                                    'SoftmaxWithLoss': 'Softmax'}
         pass
 
     def convert(self, prototxt_filename):
@@ -142,6 +143,14 @@ class CaffeConvertor(object):
             elif layer.type == 'InnerProduct':
                 c_out = layer.inner_product_param.num_output
                 layer_params['num_outputs'] = c_out
+
+            elif layer.type == 'SoftmaxWithLoss':
+                # Only use the first parent to support DenseNet spec.
+                layer_params['parents'] = [layer_params['parents'][0]]
+
+            elif layer.type == 'Accuracy':
+                # Only use the first parent to support DenseNet spec.
+                layer_params['parents'] = [layer_params['parents'][0]]
 
             elif layer.type == 'Pooling':
                 param = layer.pooling_param

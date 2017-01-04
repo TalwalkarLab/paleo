@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import math
+import numpy as np
 
 from paleo.layers import base
 
@@ -98,7 +98,7 @@ class Dropout(base.BaseLayer):
 
 
 class Softmax(base.BaseLayer):
-    """Estimator for 2D Max Pooling layers. """
+    """Estimator for Softmax layers. """
 
     def __init__(self, name, inputs, num_classes=None):
         """Initialize estimator. """
@@ -123,3 +123,42 @@ class Softmax(base.BaseLayer):
 
     def memory_in_bytes():
         return 0
+
+
+class InnerProduct(base.BaseLayer):
+    """InnerProduct layers."""
+
+    def __init__(self, name, inputs, num_outputs=None):
+        super(InnerProduct, self).__init__(name, 'innerproduct')
+        self._inputs = list(inputs)
+        if len(self._inputs) != 2:
+            # Auto flatten into (N, activations)
+            self._inputs = [self._inputs[0], np.prod(self._inputs[1:])]
+        self._num_outputs = num_outputs
+        self._outputs = [self._inputs[0], self._num_outputs]
+        self._weights = [self._inputs[1], self._num_outputs]
+
+    @property
+    def num_outputs(self):
+        return self._num_outputs
+
+    @property
+    def weights(self):
+        return self._weights
+
+    @property
+    def weights_in_bytes(self):
+        _BYTES_FLOAT = 4
+        weights_in_bytes = np.prod(self._weights) * _BYTES_FLOAT
+        bias_in_bytes = self._num_outputs * _BYTES_FLOAT
+        return weights_in_bytes + bias_in_bytes
+
+    @property
+    def num_params(self):
+        weights = np.prod(self._weights)
+        bias = self._num_outputs
+        return weights + bias
+
+    def additional_summary(self):
+        return "Outputs: {} Params: {:,}".format(self.num_outputs,
+                                                 self.num_params)
