@@ -1,5 +1,7 @@
 # Paleo
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+
 Paleo is an analytical model to estimate the scalability and performance of deep learning systems.
 It can be used to
   - efficiently explore the space of scalable deep learning systems,
