@@ -45,7 +45,6 @@ class TimeMeasureTest(unittest.TestCase):
         self.assertEqual(sum_times.comp_time, 9)
         self.assertEqual(sum_times.comm_time, 12)
         self.assertEqual(sum_times.total_time, 21)
-        print(sum_times)
 
 
 if __name__ == '__main__':
