@@ -7,15 +7,25 @@ It can be used to
 
 [Live demo](https://talwalkarlab.github.io/paleo/)
 
-## Dependencies
+## Getting Started
 
-- Python 2.7 and packages in `requirements.txt`
-- cuDNN 4
-- TensorFlow 0.9 (optional)
+### Installation
 
-Tested on Ubuntu 14.04 workstations.
+Paleo uses the following dependencies:
 
-## Usage
+- numpy
+- click
+- six (not fully compatible with python3 yet)
+- cuDNN (optional, for choosing algorithm by heuristics)
+- TensorFlow (optional, for empirical comparison)
+
+Tested with python 2.7, cuDNN v4, and TensorFlow 0.9 on Ubuntu 14.04.
+
+To install Paleo, run the following command in the cloned directory:
+
+    python setup.py install
+
+### Usage
 
 Paleo provides the following commands.
 
@@ -27,7 +37,7 @@ Paleo provides the following commands.
 
 To get help on arguments to each command:
 
-    ./paleo.sh [command] --help
+    paleo [command] --help
 
 To reproduce experiments presented in our paper submission:
 

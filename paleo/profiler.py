@@ -6,15 +6,14 @@ from __future__ import print_function
 
 import logging
 import os
-import math
 
 import click
 import numpy as np
 
+from paleo import __version__
 from paleo.graph import OperationGraph
-from paleo import device, layers
+from paleo import device
 from paleo import profilers
-from paleo import comm
 from paleo import simulation
 from paleo.utils import save_layer
 
@@ -96,8 +95,8 @@ class Profiler():
                 if executor == 'cudnn':
                     profiler = profilers.CudnnProfiler(options)
                 elif executor == 'tensorflow':
-                    import TensorFlowProfiler from profilers.tensorflow_profiler
-                    profiler = profilers.TensorFlowProfiler(options)
+                    from profilers.tensorflow_profiler import TensorFlowProfiler
+                    profiler = TensorFlowProfiler(options)
 
                 if profiler:
                     executor_time = profiler.profile(layer)
@@ -116,8 +115,8 @@ class Profiler():
         options.num_warmup = num_warmup
         options.num_iter = num_iter
         options.include_bias_and_activation = False
-        import TensorFlowProfiler from profilers.tensorflow_profiler
-        profiler = profilers.TensorFlowProfiler(options)
+        from profilers.tensorflow_profiler import TensorFlowProfiler
+        profiler = TensorFlowProfiler(options)
 
         if batch_size:
             for l in self.graph.topology_order:
@@ -198,7 +197,8 @@ HELP_DEVICE_NAME = 'Device to estimate.'
 
 @click.group()
 @click.option('--verbose', is_flag=True, help=HELP_VERBOSE)
-def cli(verbose):
+@click.version_option(__version__, prog_name='Paleo')
+def cli(verbose, version):
     if verbose:
         logger.setLevel(logging.DEBUG)
 
