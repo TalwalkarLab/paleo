@@ -11,7 +11,7 @@ It can be used to
 
 - Python 2.7 and packages in `requirements.txt`
 - cuDNN 4
-- TensorFlow 0.9<sup>[1](#footnote1)</sup>
+- TensorFlow 0.9 (optional)
 
 Tested on Ubuntu 14.04 workstations.
 
@@ -67,7 +67,3 @@ Under review for ICLR 2017.
 ## License
 
 Apache 2.0
-
-<small><a name='#footnote1'>1</a> The current version depends on TensorFlow for
-gathering emperical ground  truth. We will make this optional in later releases.
-</small>

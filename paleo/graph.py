@@ -4,7 +4,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from collections import defaultdict
 import json
 import logging
 
@@ -280,11 +279,11 @@ class OperationGraph(object):
 
         # Add edges.
         for layer_name, layer_spec in names_to_specs.items():
-            for parent_name in layer_spec['parents']:
+            for parent_name in _parents(layer_spec['parents']):
                 assert parent_name in names_to_specs, (
                     'Parent layer %s of %s '
-                    ' does not have a LayerSpec object.' % (parent_name,
-                                                            layer_name))
+                    'does not have a LayerSpec object.' % (parent_name,
+                                                           layer_name))
                 names_to_specs[parent_name].outbounds.append(layer_spec)
                 layer_spec.inbounds.append(names_to_specs[parent_name])
 

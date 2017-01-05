@@ -96,6 +96,7 @@ class Profiler():
                 if executor == 'cudnn':
                     profiler = profilers.CudnnProfiler(options)
                 elif executor == 'tensorflow':
+                    import TensorFlowProfiler from profilers.tensorflow_profiler
                     profiler = profilers.TensorFlowProfiler(options)
 
                 if profiler:
@@ -115,6 +116,7 @@ class Profiler():
         options.num_warmup = num_warmup
         options.num_iter = num_iter
         options.include_bias_and_activation = False
+        import TensorFlowProfiler from profilers.tensorflow_profiler
         profiler = profilers.TensorFlowProfiler(options)
 
         if batch_size:
