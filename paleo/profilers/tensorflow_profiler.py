@@ -25,12 +25,16 @@ class TensorFlowProfiler(BaseProfiler):
         ops, bwd_ops = None, None
         if layer.layertype == 'conv2d':
             ops, bwd_ops = self._ops_conv2d(layer, graph)
+        elif layer.layertype == 'innerproduct':
+            ops, bwd_ops = self._ops_innerproduct(layer, graph)
         elif layer.layertype == 'pool2d':
             ops, bwd_ops = self._ops_pool2d(layer, graph)
         elif layer.layertype == 'dropout':
             ops, bwd_ops = self._ops_dropout(layer, graph)
         elif layer.layertype == 'concat':
             ops, bwd_ops = self._ops_concat(layer, graph)
+        elif layer.layertype == 'reshape':
+            ops, bwd_ops = self._ops_reshape(layer, graph)
         else:
             self._logger.warning('Unimplemented \'%s\'' % layer.layertype)
 
@@ -40,7 +44,7 @@ class TensorFlowProfiler(BaseProfiler):
         graph, end_points, variables = self._compose_full_graph(layers)
 
         # Forward pass.
-        if layers[-1].layertype == 'softmax':
+        if layers[-1].layertype in ['softmax', 'sigmoid']:
             last_op = end_points[layers[-2].name]
             loss_op = end_points[layers[-1].name]
         else:
@@ -64,26 +68,39 @@ class TensorFlowProfiler(BaseProfiler):
 
     def _compose_full_graph(self, layers):
         graph = tf.Graph()
-        end_points = dict()
-        variables = [None]
+        end_points = dict()  # collects out tensors for each layer
+        variables = [None]  # collects trainable variables
         for layer in layers:
             if layer.layertype == 'conv2d':
                 ops, _ = self._ops_conv2d(layer, graph, end_points, variables)
+            elif layer.layertype == 'deconv2d':
+                ops, _ = self._ops_deconv2d(layer, graph, end_points,
+                                            variables)
+            elif layer.layertype == 'innerproduct':
+                ops, _ = self._ops_innerproduct(layer, graph, end_points,
+                                                variables)
             elif layer.layertype == 'pool2d':
                 ops, _ = self._ops_pool2d(layer, graph, end_points)
+            elif layer.layertype == 'upsampling2d':
+                ops, _ = self._ops_upsampling2d(layer, graph, end_points)
             elif layer.layertype == 'dropout':
                 ops, _ = self._ops_dropout(layer, graph, end_points)
             elif layer.layertype == 'concat':
                 ops, _ = self._ops_concat(layer, graph, end_points)
+            elif layer.layertype == 'reshape':
+                ops, _ = self._ops_reshape(layer, graph, end_points)
             elif layer.layertype == 'softmax':
                 ops, _ = self._ops_softmax(layer, graph, end_points)
+            elif layer.layertype == 'sigmoid':
+                ops, _ = self._ops_sigmoid(layer, graph, end_points)
             elif layer.layertype == 'input':
                 # skip data/input layer.
                 continue
             else:
-                raise ValueError('Cannot create ops for layer %s [%s]' %
-                                 (layer.name, layer.layertype))
+                raise NotImplementedError('Cannot create ops for layer %s [%s]'
+                                          % (layer.name, layer.layertype))
             end_points[layer.name] = ops
+
         return graph, end_points, variables[1:]
 
     def _get_inputs(self, layer, end_points=None):
@@ -101,7 +118,7 @@ class TensorFlowProfiler(BaseProfiler):
                 return inputs[0]
             return inputs
 
-    def _get_constant(self, shape, name='constant'):
+    def _get_variable(self, shape, name='constant'):
         return tf.Variable(
             tf.truncated_normal(
                 shape, dtype=tf.float32, stddev=1e-1),
@@ -115,7 +132,7 @@ class TensorFlowProfiler(BaseProfiler):
         with graph.as_default():
             with tf.device(self._device):
                 inputs = self._get_inputs(layer, end_points)
-                filters = self._get_constant(layer.filters, name='filters')
+                filters = self._get_variable(layer.filters, name='filters')
 
                 if variables:
                     variables.append(filters)
@@ -131,16 +148,44 @@ class TensorFlowProfiler(BaseProfiler):
                         bwd_inputs_op = tf.nn.conv2d_backprop_input(
                             layer.inputs,
                             filters,
-                            self._get_constant(
+                            self._get_variable(
                                 layer.outputs, name='outputs'),
                             layer.strides,
                             layer.padding)
                     elif self.options.gradient_wrt == 'filter':
                         bwd_filter_op = tf.nn.conv2d_backprop_filter(
                             inputs, layer.filters,
-                            self._get_constant(layer.outputs, 'outputs'),
+                            self._get_variable(layer.outputs, 'outputs'),
                             layer.strides, layer.padding)
         return conv, [bwd_inputs_op, bwd_filter_op]
+
+    def _ops_deconv2d(self, layer, graph, end_points=None, variables=None):
+        with graph.as_default():
+            with tf.device(self._device):
+                inputs = self._get_inputs(layer, end_points)
+                filters = self._get_variable(layer.filters, name='filters')
+
+                if variables:
+                    variables.append(filters)
+
+                deconv = tf.nn.conv2d_transpose(
+                    inputs,
+                    filters,
+                    output_shape=layer.outputs,
+                    strides=layer.strides)
+        return deconv, None
+
+    def _ops_innerproduct(self, layer, graph, end_points=None, variables=None):
+        with graph.as_default():
+            with tf.device(self._device):
+                inputs = self._get_inputs(layer, end_points)
+                weights = self._get_variable(layer.weights, name='weights')
+
+                if variables:
+                    variables.append(weights)
+
+                innerprod = tf.matmul(inputs, weights)
+        return innerprod, None
 
     def _ops_pool2d(self, layer, graph, end_points=None):
         with graph.as_default():
@@ -156,6 +201,14 @@ class TensorFlowProfiler(BaseProfiler):
                 pool = pool_op(
                     inputs, layer.kernel, layer.strides, padding=layer.padding)
         return pool, None
+
+    def _ops_upsampling2d(self, layer, graph, end_points=None):
+        with graph.as_default():
+            with tf.device(self._device):
+                inputs = self._get_inputs(layer, end_points)
+                upsampling = tf.image.resize_nearest_neighbor(
+                    inputs, layer.outputs[1:3])
+        return upsampling, None
 
     def _ops_dropout(self, layer, graph, end_points=None):
         with graph.as_default():
@@ -175,6 +228,13 @@ class TensorFlowProfiler(BaseProfiler):
                 concat = tf.concat(layer.dim, inputs)
         return concat, None
 
+    def _ops_reshape(self, layer, graph, end_points=None):
+        with graph.as_default():
+            with tf.device(self._device):
+                inputs = self._get_inputs(layer, end_points)
+                reshape = tf.reshape(inputs, layer.outputs)
+        return reshape, None
+
     def _ops_softmax(self, layer, graph, end_points=None):
         # For simplicity, here combine softmax and loss
         with graph.as_default():
@@ -184,6 +244,15 @@ class TensorFlowProfiler(BaseProfiler):
                     tf.nn.sparse_softmax_cross_entropy_with_logits(
                         tf.squeeze(inputs), self._get_fake_targets(
                             layer.outputs[0], layer.outputs[1])))
+        return loss, None
+
+    def _ops_sigmoid(self, layer, graph, end_points=None):
+        with graph.as_default():
+            with tf.device(self._device):
+                inputs = self._get_inputs(layer, end_points)
+                loss = tf.reduce_mean(
+                    tf.nn.sigmoid_cross_entropy_with_logits(inputs, tf.zeros(
+                        layer.outputs)))
         return loss, None
 
     def _execute(self, layer_ops, bwd_ops, graph):

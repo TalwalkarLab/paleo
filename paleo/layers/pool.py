@@ -78,3 +78,13 @@ class Pool2d(base.BaseLayer):
 
     def memory_in_bytes():
         return 0
+
+
+class UpSampling2D(base.BaseLayer):
+    def __init__(self, name, inputs, kernel):
+        super(UpSampling2D, self).__init__(name, 'upsampling2d')
+        self._inputs = inputs
+        self._kernel = kernel
+        self._outputs = list(inputs)
+        for dim in [1, 2]:
+            self._outputs[dim] = self._outputs[dim] * self._kernel[dim]

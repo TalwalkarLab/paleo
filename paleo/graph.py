@@ -135,6 +135,16 @@ class OperationGraph(object):
                         backprop=('data' not in layer_spec['parents']),
                         activation_fn=layer_spec.get('activation_fn', 'relu'),
                         splits=layer_spec.get('splits', None))
+                elif layer_spec['type'] == 'Deconvolution':
+                    layer = layers.Deconv2D(
+                        layer_spec.name,
+                        inputs,
+                        layer_spec['filter'],
+                        layer_spec['strides'],
+                        layer_spec['padding'],
+                        layer_spec['output_shape'],
+                        backprop=('data' not in layer_spec['parents']),
+                        activation_fn=layer_spec.get('activation_fn', 'relu'))
                 elif layer_spec['type'] == 'Pooling':
                     layer = layers.Pool2d(
                         layer_spec.name,
@@ -143,6 +153,9 @@ class OperationGraph(object):
                         layer_spec['strides'],
                         layer_spec['padding'],
                         pool_type='max')
+                elif layer_spec['type'] == 'UpSampling2D':
+                    layer = layers.UpSampling2D(layer_spec.name, inputs,
+                                                layer_spec['ksize'])
                 elif layer_spec['type'] == 'AvgPool':
                     layer = layers.Pool2d(
                         layer_spec.name,
@@ -157,11 +170,16 @@ class OperationGraph(object):
                 elif layer_spec['type'] == 'Concatenate':
                     layer = layers.Concatenate(layer_spec.name, inputs,
                                                layer_spec['dim'])
+                elif layer_spec['type'] == 'Reshape':
+                    layer = layers.Reshape(layer_spec.name, inputs,
+                                           layer_spec['output_shape'])
                 elif layer_spec['type'] == 'Elementwise':
                     layer = layers.Elementwise(layer_spec.name, inputs)
                 elif layer_spec['type'] == 'Softmax':
                     layer = layers.Softmax(layer_spec.name, inputs,
                                            layer_spec.get('num_classes', None))
+                elif layer_spec['type'] == 'Sigmoid':
+                    layer = layers.Sigmoid(layer_spec.name, inputs)
                 elif layer_spec['type'] == 'InnerProduct':
                     layer = layers.InnerProduct(layer_spec.name, inputs,
                                                 layer_spec['num_outputs'])

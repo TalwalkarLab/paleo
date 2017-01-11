@@ -33,6 +33,25 @@ class CudnnProfiler(BaseProfiler):
                         self.options.gradient_wrt == 'filter'):
                     t += self._profile_conv2d_bwd_filter(
                         layer, self.options.num_iter, self.options.num_warmup)
+        elif layer.layertype == 'deconv2d':
+            if self.options.direction == 'forward':
+                t += self._profile_conv2d_bwd_data(layer._transposed,
+                                                   self.options.num_iter,
+                                                   self.options.num_warmup)
+            elif self.options.direction == 'backward':
+                # FIXME: filter or data.
+                if (not self.options.gradient_wrt or
+                        self.options.gradient_wrt == 'data'):
+                    if layer.backprop:
+                        t += self._profile_conv2d(layer._transposed,
+                                                  self.options.num_iter,
+                                                  self.options.num_warmup)
+
+                if (not self.options.gradient_wrt or
+                        self.options.gradient_wrt == 'filter'):
+                    t += self._profile_conv2d_bwd_filter(
+                        layer._transposed, self.options.num_iter,
+                        self.options.num_warmup)
         return t
 
     def _profile_conv2d(self, layer, num_iter, num_warmup):
@@ -134,9 +153,10 @@ class CudnnProfiler(BaseProfiler):
             # Print the exhustive search result once in verbose mode.
             if i == num_warmup:
                 for al in algos:
-                    self._logger.debug("%s, %s, %f" % (
-                        CONV_ALGO_BWD_DATA_NAME[al.algo],
-                        str(libcudnn.cudnnError(al.status)), al.time))
+                    self._logger.debug("%s, %s, %f ms, %d Bytes" %
+                                       (CONV_ALGO_BWD_DATA_NAME[al.algo],
+                                        str(libcudnn.cudnnError(al.status)),
+                                        al.time, al.memory))
 
             # Always use the time returned with the heuristic-chosen algorithm.
             if i >= num_warmup:
@@ -146,7 +166,7 @@ class CudnnProfiler(BaseProfiler):
                 trails.append(time)
         cudnn_cleanup(cudnn_context, X_desc, Y_desc, filters_desc, conv_desc)
         mean_time, std = np.mean(trails), np.std(trails)
-        self._logger.debug('BWD DATA: %s %f' % (
+        self._logger.debug('BWD DATA: %s %f ms' % (
             CONV_ALGO_BWD_DATA_NAME[algo_heuristic], mean_time))
         return TimeMeasure(total_time=mean_time)
 

@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+import six
 
 from paleo.layers import base
 
@@ -19,7 +20,7 @@ class Concatenate(base.BaseLayer):
         for inp in self._inputs:
             self._outputs[dim] += inp[dim]
             # Assert equal for other dimensions.
-            for d in xrange(len(inp)):
+            for d in six.moves.range(len(inp)):
                 if d != dim:
                     assert inp[d] == self._outputs[d]
         self._dim = dim
@@ -45,6 +46,17 @@ class Concatenate(base.BaseLayer):
         return 0
 
 
+class Reshape(base.BaseLayer):
+    def __init__(self, name, inputs, output_shape):
+        super(Reshape, self).__init__(name, 'reshape')
+        self._inputs = list(inputs)
+        self._outputs = list(output_shape)
+        if self._outputs[0] == -1:
+            self._outputs[0] = self._inputs[0]
+        elif self._outputs[-1] == -1:
+            self._outputs[-1] = np.prod(self._inputs) // self._outputs[0]
+
+
 class Elementwise(base.BaseLayer):
     """Estimator for Elementwise layers. """
 
@@ -55,7 +67,7 @@ class Elementwise(base.BaseLayer):
             assert inp == inputs[0], (
                 'Elementwise op must have the same shape '
                 '%s != %s' % (inp, inputs[0]))
-        self._inputs = inputs
+        self._inputs = list(inputs)
         self._outputs = list(self._inputs[0])
 
     @property
@@ -123,6 +135,13 @@ class Softmax(base.BaseLayer):
 
     def memory_in_bytes():
         return 0
+
+
+class Sigmoid(base.BaseLayer):
+    def __init__(self, name, inputs):
+        super(Sigmoid, self).__init__(name, 'sigmoid')
+        self._inputs = inputs
+        self._outputs = [self._inputs[0], 1]
 
 
 class InnerProduct(base.BaseLayer):

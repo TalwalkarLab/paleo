@@ -29,7 +29,9 @@ class FlopsProfiler(BaseProfiler):
         time = TimeMeasure()
         if layer.layertype == 'conv2d':
             time += self._profile_conv2d(layer)
-        if layer.layertype == 'innerproduct':
+        elif layer.layertype == 'deconv2d':
+            time += self._profile_deconv2d(layer)
+        elif layer.layertype == 'innerproduct':
             time += self._profile_innerproduct(layer)
         elif layer.layertype == 'pool2d':
             time += self._profile_pool2d(layer)
@@ -120,13 +122,29 @@ class FlopsProfiler(BaseProfiler):
                 t_filter = _innerproduct(
                     _transpose_shape(layer.inputs), layer.outputs,
                     layer.weights)
-                t_filter = self._profile_conv2d_backprop_filter(layer)
             return t_data + t_filter
 
         return _innerproduct(layer.inputs, layer.weights, layer.outputs)
 
-    def _profile_conv2d(self, layer):
+    def _profile_deconv2d(self, layer):
         if self.options.direction == 'backward':
+            t_data, t_filter = TimeMeasure(), TimeMeasure()
+            assert self.options.gradient_wrt is None or (
+                self.options.gradient_wrt in ('data', 'filter'))
+            if (not self.options.gradient_wrt or
+                    self.options.gradient_wrt == 'data'):
+                t_data = self._profile_conv2d(
+                    layer._transposed, force_fwd=True)
+            if (not self.options.gradient_wrt or
+                    self.options.gradient_wrt == 'filter'):
+                t_filter = self._profile_conv2d_backprop_filter(layer)
+            return t_data + t_filter
+        # The forward pass of decov is equivalent to the backword pass of
+        # the transposed conv.
+        return self._profile_conv2d_backprop_data(layer._transposed)
+
+    def _profile_conv2d(self, layer, force_fwd=False):
+        if not force_fwd and self.options.direction == 'backward':
             t_data, t_filter = TimeMeasure(), TimeMeasure()
             assert self.options.gradient_wrt is None or (
                 self.options.gradient_wrt in ('data', 'filter'))
@@ -183,11 +201,15 @@ class FlopsProfiler(BaseProfiler):
     def _profile_conv2d_backprop_data(self, layer):
         dummy_layer = layer.gradients()
         self._logger.debug(
-            'BWD DATA: %s, %s => %s' %
-            (dummy_layer.inputs, dummy_layer.filters, dummy_layer.outputs))
+            'BWD DATA: %s (%.2f), %s (%.2f) => %s\n  Padding: %d %d %s\n'
+            '  Stride: %s' %
+            (dummy_layer.inputs, dummy_layer.percent_holes_in_inputs,
+             dummy_layer.filters, dummy_layer.percent_holes_in_filters,
+             dummy_layer.outputs, dummy_layer._pad_h, dummy_layer._pad_w,
+             dummy_layer.padding, str(dummy_layer.strides)))
         assert dummy_layer.outputs == layer.inputs, (
-            'Grad shall match original shape [grad] %s != %s [inputs]' %
-            (dummy_layer.outputs, layer.inputs))
+            '%s: Grad shall match original shape [grad] %s != %s [inputs]' %
+            (layer.name, dummy_layer.outputs, layer.inputs))
 
         if not layer.backprop:
             self._logger.debug('Skipped backprop on data for %s' % layer.name)
@@ -207,9 +229,11 @@ class FlopsProfiler(BaseProfiler):
             self.message = 'GEMM 1x1'
             return self._profile_conv2d_gemm(dummy_layer)
         elif algorithm_name == 'CUDNN_CONVOLUTION_BWD_DATA_ALGO_0':
+            # implicit gemm
             return self._profile_conv2d_gemm(dummy_layer)
         elif algorithm_name == 'CUDNN_CONVOLUTION_BWD_DATA_ALGO_1':
-            return self._profile_conv2d_gemm(dummy_layer)
+            # precomp gemm
+            return self._profile_conv2d_gemm(dummy_layer, additional_mem=True)
         elif algorithm_name == 'CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT':
             return self._profile_conv2d_fft(dummy_layer)
         elif algorithm_name == 'CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING':
@@ -226,8 +250,8 @@ class FlopsProfiler(BaseProfiler):
             'BWD FILTER: %s, %s => %s' %
             (dummy_layer.inputs, dummy_layer.filters, dummy_layer.outputs))
         assert dummy_layer.outputs[1:3] == layer.filters[0:2], (
-            'Grad shall match original shape [grad] %s != %s [filters]' %
-            (dummy_layer.outputs, layer.filters))
+            '%s: Grad shall match original shape [grad] %s != %s [filters]' %
+            (layer.name, dummy_layer.outputs, layer.filters))
 
         if not self.options.use_cudnn_heuristics:
             self.message = 'Heuristic disabled.'
@@ -254,7 +278,7 @@ class FlopsProfiler(BaseProfiler):
         self._logger.warning('Unsupported algorithm: %s' % algorithm_name)
         return TimeMeasure()
 
-    def _profile_conv2d_gemm(self, layer):
+    def _profile_conv2d_gemm(self, layer, additional_mem=False):
         """Returns the flops of convolution 2d.
         Assume
             inputs: [N, H, W, C]
@@ -269,18 +293,40 @@ class FlopsProfiler(BaseProfiler):
         # Flops across multiple input patches.
         flops *= layer.inputs[0]
 
-        flops *= (1.0 - layer.percent_holes)
-        self._logger.debug('GEMM flops: %d  (holes: %f)' %
-                           (flops, layer.percent_holes))
+        flops *= (1.0 - layer.percent_holes_in_filters)
 
-        comm_time = self._estimate_comm_time(
-            np.prod(layer.inputs) * _BYTES_FLOAT)
+        if layer.percent_holes_in_inputs > 0:
+            # Move every element in the input tensor.
+            flops += 2 * np.prod(layer.inputs) * (
+                1.0 - layer.percent_holes_in_inputs)
+
+        self._logger.debug('GEMM flops: %d\n  holes filter: %.2f\n'
+                           '  holes inputs: %.2f' %
+                           (flops, layer.percent_holes_in_filters,
+                            layer.percent_holes_in_inputs))
+
+        input_size = (layer.inputs[0] * (layer.inputs[1] + 2 * layer._pad_h) *
+                      (layer.inputs[2] + 2 * layer._pad_w) * layer.inputs[3])
+        comm_time = self._estimate_comm_time(input_size * _BYTES_FLOAT)
         comm_time += self._estimate_comm_time(
-            np.prod(layer.filters) * (1.0 - layer.percent_holes) *
+            np.prod(layer.filters) * (1.0 - layer.percent_holes_in_filters) *
             _BYTES_FLOAT)
         comm_time += self._estimate_comm_time(
             np.prod(layer.outputs) * _BYTES_FLOAT)
         comp_time = self._estimate_comp_time(flops)
+
+        if additional_mem:
+            # [batch, out_height, out_width, filter_height * filter_width *
+            #  in_channels]
+            mem = ((layer.inputs[0] * layer.outputs[1] * layer.outputs[2] *
+                    layer.filters[0] * layer.filters[1] * layer.filters[2]) *
+                   _BYTES_FLOAT) * 2
+            comm_time += self._estimate_comm_time(mem)
+
+            # Read the shared weights for each patch.
+            #  mem = ((layer.filters[0] * layer.filters[1] * layer.filters[3]) *
+            #         layer.outputs[1] * layer.outputs[2]) * _BYTES_FLOAT
+            #  comm_time += self._estimate_comm_time(mem)
 
         self._logger.debug('GEMM estimates: %f = %f + %f' %
                            (comp_time + comm_time, comp_time, comm_time))
@@ -308,10 +354,6 @@ class FlopsProfiler(BaseProfiler):
         comp_time = self._estimate_comp_time(flops)
 
         return TimeMeasure(comp_time=comp_time, comm_time=comm_time)
-
-        self.history.append((layer_name, flops, mem, 0, mem))
-        return self.one_layer_time(flops, mem, 0, mem)
-        pass
 
     def _profile_conv2d_fft(self, layer, tiling=False):
         """Returns the flops of convolution 2d."""

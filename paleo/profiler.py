@@ -153,6 +153,7 @@ class Profiler():
                 print(self._separator.join(headers))
                 for times in scaling_times:
                     print(self._separator.join([str(t) for t in times]))
+                # return scaling_times
         elif parallel == 'model':
             # Estimate time for weights update.
             # Weak scaling.
@@ -198,7 +199,7 @@ HELP_DEVICE_NAME = 'Device to estimate.'
 @click.group()
 @click.option('--verbose', is_flag=True, help=HELP_VERBOSE)
 @click.version_option(__version__, prog_name='Paleo')
-def cli(verbose, version):
+def cli(verbose):
     if verbose:
         logger.setLevel(logging.DEBUG)
 
@@ -228,6 +229,7 @@ def simulate(netspec_files, device_name, network_name, batch_size,
     num_workers = [int(x) for x in num_workers.split(',')]
 
     for netspec_file in netspec_files:
+        print(netspec_file)
         profiler = Profiler(netspec_file, separator=separator)
         profiler.simulate(device_name, network_name, batch_size, use_pipeline,
                           use_only_gemm, num_workers, scaling, ppp_comp,
