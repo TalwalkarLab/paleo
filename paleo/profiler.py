@@ -31,7 +31,7 @@ class Profiler():
         # Parse the net spec and flatten into a list in topology order.
         self.graph = OperationGraph(filename)
         logger.debug('Net spec loaded from %s.' % filename)
-        logger.info('Dependencies: %s' % str(self.graph.nested_list))
+        logger.debug('Dependencies: %s' % str(self.graph.nested_list))
         self._separator = separator
 
     def print_static_summary(self):

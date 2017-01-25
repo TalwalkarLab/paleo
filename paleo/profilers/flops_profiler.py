@@ -41,7 +41,7 @@ class FlopsProfiler(BaseProfiler):
         elif layer.layertype == 'dropout':
             time += self._profile_dropout(layer)
         else:
-            self._logger.warning('Unimplemented \'%s\'' % layer.layertype)
+            self._logger.debug('Unimplemented \'%s\'' % layer.layertype)
 
         time += self._estimate_remote_fetch(
             layer, current_device, parent_devices, cross_device_bandwidth)

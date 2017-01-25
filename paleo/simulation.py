@@ -23,8 +23,8 @@ def _profile_for_batch_size(layer_list,
                             ppp_comm,
                             cross_device_bandwidth=None):
     """Use flops profiler to estiamte execution with under the given spec."""
-    logger.info('Profile for\n  pass: %s\n  device: %s\n  batch size: %s' %
-                (direction, device.name, batch_size))
+    logger.debug('Profile for\n  pass: %s\n  device: %s\n  batch size: %s' %
+                 (direction, device.name, batch_size))
     times = []
     params_in_bytes = 0
 
@@ -202,8 +202,9 @@ def simulate_scaling(layer_dependencies, layer_list, worker_sizes,
                      scaling_type, batch_size, device, network, use_pipeline,
                      use_only_gemm, ppp_comp, ppp_comm):
     """Run simulation for data parallel."""
-    logger.info('Simulate scaling:\n  type: %s\n  device: %s\n  batch size: %s'
-                % (scaling_type, device.name, batch_size))
+    logger.debug(
+        'Simulate scaling:\n  type: %s\n  device: %s\n  batch size: %s' %
+        (scaling_type, device.name, batch_size))
 
     if scaling_type == 'weak':
         # Get times for different batch_sizes:
