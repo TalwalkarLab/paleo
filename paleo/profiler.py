@@ -93,7 +93,8 @@ class Profiler():
             if device_spec.is_gpu:
                 profiler = None
                 if executor == 'cudnn':
-                    profiler = profilers.CudnnProfiler(options)
+                    from profilers.cudnn_profiler import CudnnProfiler
+                    profiler = CudnnProfiler(options)
                 elif executor == 'tensorflow':
                     from profilers.tensorflow_profiler import TensorFlowProfiler
                     profiler = TensorFlowProfiler(options)

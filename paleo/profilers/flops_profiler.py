@@ -8,7 +8,6 @@ import math
 import numpy as np
 
 from paleo.profilers.base import BaseProfiler, TimeMeasure
-from paleo.profilers import cudnn_profiler as cudnn
 
 _BYTES_FLOAT = 4
 _BYTES_COMPLEX = 8
@@ -20,6 +19,10 @@ class FlopsProfiler(BaseProfiler):
         self._device = device
         if not self._device.is_gpu:
             self.options.use_cudnn_heuristics = False
+
+        if self.options.use_cudnn_heuristics:
+            from paleo.profilers import cudnn_profiler as cudnn
+            self.cudnn = cudnn
 
     def profile(self,
                 layer,
@@ -162,10 +165,10 @@ class FlopsProfiler(BaseProfiler):
             t_conv = self._profile_conv2d_gemm(layer)
         else:
             # Use cudnn heuristics to get the algorithm used.
-            algo, ws_size = cudnn.get_convolution_fwd_algorithm(
+            algo, ws_size = self.cudnn.get_convolution_fwd_algorithm(
                 layer.inputs, layer.filters, layer.strides, layer._pad_h,
                 layer._pad_w)
-            algorithm_name = cudnn.CONV_ALGO_FWD_NAME[algo]
+            algorithm_name = self.cudnn.CONV_ALGO_FWD_NAME[algo]
             self.message = '%s %f MB' % (algorithm_name, ws_size / 10**6)
 
             if layer.filters[0:2] == [1, 1]:
@@ -219,10 +222,10 @@ class FlopsProfiler(BaseProfiler):
             return self._profile_conv2d_gemm(dummy_layer)
 
         # Use cudnn heuristics to get the algorithm used.
-        algo, ws_size = cudnn.get_convolution_bwd_data_algorithm(
+        algo, ws_size = self.cudnn.get_convolution_bwd_data_algorithm(
             layer.inputs, layer.filters, layer.strides, layer._pad_h,
             layer._pad_w)
-        algorithm_name = cudnn.CONV_ALGO_BWD_DATA_NAME[algo]
+        algorithm_name = self.cudnn.CONV_ALGO_BWD_DATA_NAME[algo]
         self.message = '%s %f MB' % (algorithm_name, ws_size / 10**6)
 
         if layer.filters[0:2] == [1, 1]:
@@ -258,10 +261,10 @@ class FlopsProfiler(BaseProfiler):
             return self._profile_conv2d_gemm(dummy_layer)
 
         # Use cudnn heuristics to get the algorithm used.
-        algo, ws_size = cudnn.get_convolution_bwd_filter_algorithm(
+        algo, ws_size = self.cudnn.get_convolution_bwd_filter_algorithm(
             layer.inputs, layer.filters, layer.strides, layer._pad_h,
             layer._pad_w)
-        algorithm_name = cudnn.CONV_ALGO_BWD_FILTER_NAME[algo]
+        algorithm_name = self.cudnn.CONV_ALGO_BWD_FILTER_NAME[algo]
         self.message = '%s %f MB' % (algorithm_name, ws_size / 10**6)
 
         if layer.filters[0:2] == [1, 1]:

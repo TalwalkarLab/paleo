@@ -7,7 +7,7 @@ from __future__ import print_function
 import unittest
 import six
 
-import graph
+from paleo import graph
 
 
 class GraphTest(unittest.TestCase):

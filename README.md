@@ -17,11 +17,11 @@ Paleo uses the following dependencies:
 
 - numpy
 - click
-- six (not fully compatible with python3 yet)
-- cuDNN (optional, for choosing algorithm by heuristics)
-- TensorFlow (optional, for empirical comparison)
+- six (Not fully compatible with Python 3 yet)
+- cuDNN (Optional. Use `--use_only_gemm` to disable cuDNN heuristics)
+- TensorFlow (Optional. For empirical comparison only.)
 
-Tested with python 2.7, cuDNN v4, and TensorFlow 0.9 on Ubuntu 14.04.
+Tested with Python 2.7, cuDNN v4, and TensorFlow 0.9 on Ubuntu 14.04.
 
 To install Paleo, run the following command in the cloned directory:
 
@@ -72,7 +72,7 @@ Predefined hardware specificiations are in `paleo/device.py`.
 
 Hang Qi, Evan R. Sparks, and Ameet Talwalkar.
 [Paleo: A Performance Model for Deep Neural Networks][1].
-Under review for ICLR 2017.
+Under review at ICLR 2017.
 
 [1]: https://openreview.net/forum?id=SyVVJ85lg
 
