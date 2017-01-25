@@ -120,6 +120,7 @@ class Softmax(base.BaseLayer):
             self._num_classes = self._inputs[-1]
             self._outputs = [self._inputs[0], self._inputs[-1]]
         else:
+            self._num_classes = num_classes
             self._outputs = [self._inputs[0], num_classes]
 
     @property
@@ -131,7 +132,7 @@ class Softmax(base.BaseLayer):
         return self._num_classes
 
     def additional_summary(self):
-        return "Classes: %d" % self._num_classes
+        return "Classes: %d" % self.num_classes
 
     def memory_in_bytes():
         return 0
