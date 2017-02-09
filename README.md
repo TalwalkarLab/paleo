@@ -72,9 +72,9 @@ Predefined hardware specificiations are in `paleo/device.py`.
 
 Hang Qi, Evan R. Sparks, and Ameet Talwalkar.
 [Paleo: A Performance Model for Deep Neural Networks][1].
-Under review at ICLR 2017.
+ICLR 2017.
 
-[1]: https://openreview.net/forum?id=SyVVJ85lg
+[1]: https://openreview.net/pdf?id=SyVVJ85lg
 
 ## License
 
