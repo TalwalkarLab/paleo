@@ -83,3 +83,14 @@ def get_all_comm_schemes(num_nodes, device, ppp_comm):
             TreeAllReduce(num_nodes, device, ppp_comm),
             ButterflyAllReduce(num_nodes, device, ppp_comm),
             ButterflyMixing(num_nodes, device, ppp_comm)]
+
+
+def get_comm_scheme(name, num_nodes, device, ppp_comm):
+    if name == 'TreeAllReduce':
+        return TreeAllReduce(num_nodes, device, ppp_comm)
+    elif name == 'OneToAll':
+        return OneToAll(num_nodes, device, ppp_comm)
+    elif name == 'ButterflyAllReduce':
+        return ButterflyAllReduce(num_nodes, device, ppp_comm)
+    elif name == 'ButterflyMixing':
+        return ButterflyMixing(num_nodes, device, ppp_comm)

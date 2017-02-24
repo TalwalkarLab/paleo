@@ -16,6 +16,7 @@ from paleo import device
 from paleo import profilers
 from paleo import simulation
 from paleo.utils import save_layer
+from paleo import comm
 
 FORMAT = "%(levelname)s %(pathname)s:%(lineno)d] %(message)s"
 logging.basicConfig(format=FORMAT)
@@ -191,6 +192,63 @@ class Profiler():
             print(self._separator.join(headers))
             for times in result_times:
                 print(self._separator.join([str(t) for t in times]))
+
+
+class BaseProfiler(object):
+    """API for creating customized profilers."""
+
+    def __init__(self, filename, separator='\t'):
+        """Initialize a profiler for the given network architecture."""
+        self.graph = OperationGraph(filename)
+        self._options = {
+            'device_name': 'K80',
+            'network_name': 'ethernet20',
+            'use_only_gemm': False,
+            'use_pipeline': False,
+            'ppp_comp': 0.62,
+            'ppp_comm': 0.72
+        }
+
+    @property
+    def device_spec(self):
+        return device.DEVICES[self._options['device_name']]
+
+    @property
+    def network_spec(self):
+        return device.NETWORKS[self._options['network_name']]
+
+    def estimate_forward(self, batch_sizes):
+        forward_times, params_in_bytes = simulation._profile_for_batch_size(
+            self.graph.topology_order, 'forward', self.device_spec,
+            batch_sizes, self._options['use_only_gemm'],
+            self._options['ppp_comp'], self._options['ppp_comm'])
+
+        if self._options['use_pipeline']:
+            return sum([t.lowerbound for t in forward_times]), params_in_bytes
+
+        return sum(forward_times).total_time, params_in_bytes
+
+    def estimate_backward(self, batch_sizes):
+        backward_times, _ = simulation._profile_for_batch_size(
+            self.graph.topology_order, 'backward', self.device_spec,
+            batch_sizes, self._options['use_only_gemm'],
+            self._options['ppp_comp'], self._options['ppp_comm'])
+
+        if self._options['use_pipeline']:
+            return sum([t.lowerbound for t in backward_times])
+        return sum(backward_times).total_time
+
+    def estimate_update(self, params_in_bytes):
+        time_apply_updates = simulation._profile_for_apply_updates(
+            params_in_bytes, self.device_spec)
+        if self._options['use_pipeline']:
+            return time_apply_updates.lowerbound
+        return time_apply_updates.total_time
+
+    def estimate_comm(self, workers, params_in_bytes, scheme='TreeAllReduce'):
+        comm_scheme = comm.get_comm_scheme(scheme, workers, self.network_spec,
+                                           self._options['ppp_comm'])
+        return comm_scheme.all_reduce(params_in_bytes)
 
 
 HELP_VERBOSE = 'Whether to display debug level log messages.'
