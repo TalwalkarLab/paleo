@@ -203,7 +203,7 @@ class BaseProfiler(object):
         self._options = {
             'device_name': 'K80',
             'network_name': 'ethernet20',
-            'use_only_gemm': False,
+            'use_only_gemm': True,
             'use_pipeline': False,
             'ppp_comp': 0.62,
             'ppp_comm': 0.72
