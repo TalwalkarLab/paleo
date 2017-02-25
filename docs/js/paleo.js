@@ -55,7 +55,7 @@ $(document).ready(function(){
   });
 
   // Auto submit.
-  $('.paleo-input-knob').change(onSubmit);
+  $('.paleo-input-knob').on('change', onSubmit);
 });
 
 function inputsToKey(paleoInputs){
