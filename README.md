@@ -29,21 +29,27 @@ To install Paleo, run the following command in the cloned directory:
 
 ### Usage
 
-Paleo provides the following commands.
+Paleo provides programmatic APIs to retrieve runtime estimations.
 
+The following is an example of estimating SGD executions under strong scaling.
 
-- `summary` prints static characteristics of the given model architecture.
-- `simulate` simulates the scalability of the given model architecture.
-- `profile` performs layer-wise profiling of the given model architecture.
-- `fullpass` runs full-pass profiler with TensorFlow.
+```python
+from paleo.profilers import BaseProfiler
 
-To get help on arguments to each command:
+class SGDProfiler(BaseProfiler):
+    def __init__(self, filename):
+        super(SGDProfiler, self).__init__(filename)
 
-    paleo [command] --help
+    def simulate(self, workers, batch_size=128):
+        fwd_time, params_in_bytes = self.estimate_forward(batch_size //
+                                                          workers)
+        bwd_time = self.estimate_backward(batch_size // workers)
+        update_time = self.estimate_update(params_in_bytes)
 
-To reproduce experiments presented in our paper submission:
-
-    ./scripts/<exp_script>.sh
+        t_comp = fwd_time + bwd_time + update_time
+        t_comm = self.estimate_comm(workers, params_in_bytes)
+        return t_comp + t_comm
+```
 
 ## Definitions
 
@@ -72,7 +78,14 @@ Predefined hardware specificiations are in `paleo/device.py`.
 
 Hang Qi, Evan R. Sparks, and Ameet Talwalkar.
 [Paleo: A Performance Model for Deep Neural Networks][1].
-ICLR 2017.
+International Conference on Learning Representations (ICLR), 2017.
+
+    @inproceedings{qi17paleo,
+      author={Hang Qi and Evan R. Sparks and Ameet Talwalkar},
+      booktitle={Proceedings of the International Conference on Learning Representations},
+      title={Paleo: A Performance Model for Deep Neural Networks},
+      year={2017}
+    }
 
 [1]: https://openreview.net/pdf?id=SyVVJ85lg
 
