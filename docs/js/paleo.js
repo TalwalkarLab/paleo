@@ -25,6 +25,7 @@ $(document).ready(function(){
   $('#paleo-input__batch_size_power').on('change mousemove', function(){
     $('#paleo-input__batch_size').html(
       Math.pow(2, parseInt($('#paleo-input__batch_size_power').val())));
+    onSubmit();
   });
 
   // Cloud selector.
