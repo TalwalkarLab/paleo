@@ -22,9 +22,8 @@ a img{
 }
 
 .paleo-title {
-  color: #333;
-  /*color: white;*/
-  font-family: Palatino;
+  color: #545454;
+  font-family: Lora, Palatino;
   font-size: 28px;
 }
 
