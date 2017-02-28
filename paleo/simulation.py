@@ -140,8 +140,7 @@ def simulate_hybrid_parallel(nested_list, layer_list, batch_size, device,
             time_fwd = sum([t.lowerbound for t in forward_times])
             time_bwd = sum([t.lowerbound for t in backward_times])
             time_apply = time_apply_updates.lowerbound
-        return (time_fwd, time_bwd, time_apply_updates.total_time,
-                time_sync_weights)
+        return (time_fwd, time_bwd, time_apply, time_sync_weights)
 
     # Get times for different batch_sizes:
     def _simulate_model_parallel_layers(layers):
@@ -153,7 +152,6 @@ def simulate_hybrid_parallel(nested_list, layer_list, batch_size, device,
             ppp_comm, network.bandwidth / 8)  # Use GB/s in profiler.
         time_apply_updates = _profile_for_apply_updates(params_in_bytes,
                                                         device)
-        result_times = []
         fwd_lower, fwd_upper = _sum_with_parallel(nested_list, layers,
                                                   forward_times)
         bwd_lower, bwd_upper = _sum_with_parallel(nested_list, layers,
@@ -178,23 +176,30 @@ def simulate_hybrid_parallel(nested_list, layer_list, batch_size, device,
     if len(model_parallel_layers) > 0:
         parent_layer = model_parallel_layers[0].parents[0]
         bytes_to_transfer = np.prod(parent_layer.layer_op.outputs)
-        time_fetch = bytes_to_transfer / 2**30 / (network.bandwidth /
-                                                  8) * 10**3
+        time_fetch = bytes_to_transfer / 2 ** 30 / (network.bandwidth /
+                                                    8) * 10 ** 3
         time_fetch *= (hybrid_workers - 1)
 
-        # Multiple model parallel stages. Only one fetch_time because of pipeline.
+        # Multiple model parallel stages.
+        # Only one fetch_time because of pipeline.
         m_time_fwd = (m_time_fwd - time_fetch) * hybrid_workers + time_fetch
         m_time_bwd = (m_time_bwd - time_fetch) * hybrid_workers + time_fetch
         logger.info('Saved fetch time from %s by pipelining: %f' %
                     (parent_layer, time_fetch * (hybrid_workers - 1)))
 
-    headers = ['workers', 'batch_size', 'fwd_time', 'bwd_time', 'apply_time',
-               'sync_time(tree)']
+    headers = [
+        'workers', 'batch_size', 'fwd_time', 'bwd_time', 'apply_time',
+        'sync_time(tree)'
+    ]
     results = []
-    results.append([hybrid_workers, effective_batch_size, d_time_fwd,
-                    d_time_bwd, d_time_apply, d_time_sync])
-    results.append([hybrid_workers, effective_batch_size, m_time_fwd,
-                    m_time_bwd, m_time_apply, 0])
+    results.append([
+        hybrid_workers, effective_batch_size, d_time_fwd, d_time_bwd,
+        d_time_apply, d_time_sync
+    ])
+    results.append([
+        hybrid_workers, effective_batch_size, m_time_fwd, m_time_bwd,
+        m_time_apply, 0
+    ])
     return headers, results
 
 
@@ -255,18 +260,22 @@ def simulate_scaling(layer_dependencies, layer_list, worker_sizes,
         # For each node size, we collect
         #     workers,effective_batch_size, num_iter, fwd_time, bwd_time,
         #     apply_time, comp_time, [sync_times...]
-        times = [num_workers, effective_batch_size, num_iterations, time_fwd,
-                 time_bwd, time_apply, time_fwd + time_bwd + time_apply]
+        times = [
+            num_workers, effective_batch_size, num_iterations, time_fwd,
+            time_bwd, time_apply, time_fwd + time_bwd + time_apply
+        ]
         times.extend([
             c.all_reduce(params_in_bytes)
             for c in comm.get_all_comm_schemes(num_workers, network, ppp_comm)
         ])
         all_times.append(times)
 
-    headers = ['workers', 'batch_size', 'iter', 'time_fwd', 'time_bwd',
-               'time_apply', 'time_comp']
-    headers.extend([c.name
-                    for c in comm.get_all_comm_schemes(1, network, ppp_comm)])
+    headers = [
+        'workers', 'batch_size', 'iter', 'time_fwd', 'time_bwd', 'time_apply',
+        'time_comp'
+    ]
+    headers.extend(
+        [c.name for c in comm.get_all_comm_schemes(1, network, ppp_comm)])
     assert len(headers) == len(all_times[0])
 
     return headers, all_times

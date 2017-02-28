@@ -97,7 +97,8 @@ class Profiler():
                     from profilers.cudnn_profiler import CudnnProfiler
                     profiler = CudnnProfiler(options)
                 elif executor == 'tensorflow':
-                    from profilers.tensorflow_profiler import TensorFlowProfiler
+                    from profilers.tensorflow_profiler import (
+                        TensorFlowProfiler)
                     profiler = TensorFlowProfiler(options)
 
                 if profiler:
@@ -124,8 +125,9 @@ class Profiler():
             for l in self.graph.topology_order:
                 l.layer_op.batch_size = batch_size
 
-        layers = [layer_spec.layer_op
-                  for layer_spec in self.graph.topology_order]
+        layers = [
+            layer_spec.layer_op for layer_spec in self.graph.topology_order
+        ]
 
         return profiler.profile_full_pass(layers)
 
@@ -340,14 +342,15 @@ def profile(netspec_files, device_name, num_warmup, num_iter, extract_conv_dir,
     def _print_tabular(cudnn_result, tensorflow_result):
         assert len(cudnn_result) == len(tensorflow_result)
 
-        print(separator.join(['layer', 'ours', 'cudnn', 'tensorflow',
-                              'ours_alg', 'cu_alg']))
+        print(separator.join(
+            ['layer', 'ours', 'cudnn', 'tensorflow', 'ours_alg', 'cu_alg']))
         sum_ours, sum_cu, sum_tf = 0, 0, 0
         for cudnn_prof, tf_prof in zip(cudnn_result, tensorflow_result):
             (layer_name, ours_time, cudnn_time, tf_time, our_msg,
              cu_msg) = ['', 0, 0, 0, '', '']
             if cudnn_prof:
-                layer_name, ours_time, cudnn_time, _, our_msg, cu_msg = cudnn_prof
+                layer_name, ours_time, cudnn_time, _, our_msg, cu_msg = (
+                    cudnn_prof)
             if tf_prof:
                 layer_name, ours_time, tf_time, _, our_msg, _ = tf_prof
 

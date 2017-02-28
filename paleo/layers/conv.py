@@ -51,7 +51,8 @@ class Deconv2D(base.BaseLayer):
 
         # Verify the backprop will get the correct gradient shapes.
         self._back_filters = self._equivalent_conv.gradients(wrt='filters')
-        self._back_filters._percent_holes = self._equivalent_conv._percent_holes
+        self._back_filters._percent_holes = (
+            self._equivalent_conv._percent_holes)
         self._back_filters._hole_position = 'filters'
         assert self._back_filters.outputs[1:3] == filters[:2], (
             'Back filters {} does not match the desired shape {}'.format(
@@ -192,9 +193,10 @@ class Conv2d(base.BaseLayer):
         self._filters[3] = self._filters[3] // num_splits
 
     def additional_summary(self):
-        return "Filters: {}  Pad: {} ({}, {}) Stride: {}, {} Params: {:,}".format(
-            self._filters, self._padding, self._pad_h, self._pad_w,
-            self.strides[1], self.strides[2], self.num_params)
+        return ("""Filters: {}  Pad: {} ({}, {}) """
+                """Stride: {}, {} Params: {:,}""".format(
+                    self._filters, self._padding, self._pad_h, self._pad_w,
+                    self.strides[1], self.strides[2], self.num_params))
 
     def _calculate_output_shape(self):
         """Returns the output tensor shape."""
@@ -226,8 +228,8 @@ class Conv2d(base.BaseLayer):
             "Input channel shall match. Layer %s: %d != %d" %
             (self.name, in_channel, c))
 
-        #out_h = (h + 2 * self._pad_h - kernel_h) // stride_h + 1
-        #out_w = (w + 2 * self._pad_w - kernel_w) // stride_w + 1
+        # out_h = (h + 2 * self._pad_h - kernel_h) // stride_h + 1
+        # out_w = (w + 2 * self._pad_w - kernel_w) // stride_w + 1
 
         return [n, out_height, out_width, out_channel]
 
@@ -298,10 +300,14 @@ class Conv2d(base.BaseLayer):
         if wrt == 'inputs':
             dummy_layer = Conv2d(
                 name="dummy_layer",
-                inputs=[layer.outputs[0], expanded_output_h, expanded_output_w,
-                        layer.outputs[3]],
-                filters=[layer.filters[0], layer.filters[1], layer.filters[3],
-                         layer.filters[2]],
+                inputs=[
+                    layer.outputs[0], expanded_output_h, expanded_output_w,
+                    layer.outputs[3]
+                ],
+                filters=[
+                    layer.filters[0], layer.filters[1], layer.filters[3],
+                    layer.filters[2]
+                ],
                 strides=[1, 1, 1, 1],
                 padding=[pad_h, pad_w],
                 percent_holes=percent_holes,
@@ -316,10 +322,14 @@ class Conv2d(base.BaseLayer):
             # Convolution of inputs with inputs and output grads.
             dummy_layer = Conv2d(
                 name="dummy_layer",
-                inputs=[layer.inputs[3], layer.inputs[1], layer.inputs[2],
-                        layer.inputs[0]],
-                filters=[expanded_output_h, expanded_output_w,
-                         layer.outputs[0], layer.outputs[3]],
+                inputs=[
+                    layer.inputs[3], layer.inputs[1], layer.inputs[2],
+                    layer.inputs[0]
+                ],
+                filters=[
+                    expanded_output_h, expanded_output_w, layer.outputs[0],
+                    layer.outputs[3]
+                ],
                 strides=[1, 1, 1, 1],
                 padding=_p,
                 percent_holes=percent_holes,

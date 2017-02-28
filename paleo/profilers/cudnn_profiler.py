@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+from six.moves import range
 from paleo.profilers.base import BaseProfiler, TimeMeasure
 from paleo.third_party import libcudnn
 
@@ -68,7 +69,7 @@ class CudnnProfiler(BaseProfiler):
             layer._pad_w)
 
         trails = []
-        for i in xrange(num_warmup + num_iter):
+        for i in range(num_warmup + num_iter):
             num_results = 7
             algos = libcudnn.cudnnFindConvolutionForwardAlgorithm(
                 cudnn_context, X_desc, filters_desc, conv_desc, Y_desc,
@@ -88,7 +89,7 @@ class CudnnProfiler(BaseProfiler):
                         time = al.time
                 trails.append(time)
         cudnn_cleanup(cudnn_context, X_desc, Y_desc, filters_desc, conv_desc)
-        mean_time, std = np.mean(trails), np.std(trails)
+        mean_time = np.mean(trails)
         return TimeMeasure(total_time=mean_time)
 
     def _profile_conv2d_bwd_filter(self, layer, num_iter, num_warmup):
@@ -105,7 +106,7 @@ class CudnnProfiler(BaseProfiler):
             layer._pad_w)
 
         trails = []
-        for i in xrange(num_warmup + num_iter):
+        for i in range(num_warmup + num_iter):
             num_results = len(CONV_ALGO_BWD_FILTER_NAME)
             algos = libcudnn.cudnnFindConvolutionBackwardFilterAlgorithm(
                 cudnn_context, X_desc, Y_desc, conv_desc, filters_desc,
@@ -125,7 +126,7 @@ class CudnnProfiler(BaseProfiler):
                         time = al.time
                 trails.append(time)
         cudnn_cleanup(cudnn_context, X_desc, Y_desc, filters_desc, conv_desc)
-        mean_time, std = np.mean(trails), np.std(trails)
+        mean_time = np.mean(trails)
         self._logger.debug('BWD FILTER: %s %f' % (
             CONV_ALGO_BWD_FILTER_NAME[algo_heuristic], mean_time))
         return TimeMeasure(total_time=mean_time)
@@ -144,7 +145,7 @@ class CudnnProfiler(BaseProfiler):
             layer._pad_w)
 
         trails = []
-        for i in xrange(num_warmup + num_iter):
+        for i in range(num_warmup + num_iter):
             num_results = len(CONV_ALGO_BWD_DATA_NAME)
             algos = libcudnn.cudnnFindConvolutionBackwardDataAlgorithm(
                 cudnn_context, filters_desc, Y_desc, conv_desc, X_desc,
@@ -165,7 +166,7 @@ class CudnnProfiler(BaseProfiler):
                         time = al.time
                 trails.append(time)
         cudnn_cleanup(cudnn_context, X_desc, Y_desc, filters_desc, conv_desc)
-        mean_time, std = np.mean(trails), np.std(trails)
+        mean_time = np.mean(trails)
         self._logger.debug('BWD DATA: %s %f ms' % (
             CONV_ALGO_BWD_DATA_NAME[algo_heuristic], mean_time))
         return TimeMeasure(total_time=mean_time)
@@ -233,8 +234,9 @@ def cudnn_prepare(inputs, filters, strides, pad_h, pad_w):
         upscaley, convolution_mode)
 
     # Get output dimensions (first two values are n_input and filters_out)
-    _, _, height_output, width_output = libcudnn.cudnnGetConvolution2dForwardOutputDim(
-        conv_desc, X_desc, filters_desc)
+    _, _, height_output, width_output = (
+        libcudnn.cudnnGetConvolution2dForwardOutputDim(conv_desc, X_desc,
+                                                       filters_desc))
 
     Y_desc = libcudnn.cudnnCreateTensorDescriptor()
     libcudnn.cudnnSetTensor4dDescriptor(Y_desc, tensor_format, data_type,

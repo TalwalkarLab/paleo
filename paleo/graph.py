@@ -115,8 +115,8 @@ class OperationGraph(object):
                 inputs = []
                 try:
                     for parent_name in layer_spec['parents']:
-                        inputs.append(names_to_specs[
-                            parent_name].layer_op.outputs)
+                        inputs.append(
+                            names_to_specs[parent_name].layer_op.outputs)
                 except KeyError:
                     raise KeyError('Cannot find parent "%s" of "%s"' %
                                    (parent_name, layer_spec.name))
@@ -199,8 +199,8 @@ class OperationGraph(object):
             if layer:
                 logger.debug('Attach layer op: %s inputs: %s  ouputs: %s' %
                              (layer.name, layer.inputs, layer.outputs))
-                layer_spec.parents.extend([names_to_specs[p]
-                                           for p in layer_spec['parents']])
+                layer_spec.parents.extend(
+                    [names_to_specs[p] for p in layer_spec['parents']])
                 layer.parents = layer_spec['parents']
                 layer_spec.attach_op(layer)
                 names_to_specs[layer_spec.name] = layer_spec
@@ -253,7 +253,7 @@ class OperationGraph(object):
                 block_name = layer_name
                 block_parents = _parents(layer_params['parents'])
 
-                # For model parallel, the specified layers are repeated K times.
+                # For model parallel, the specified layers are repeated.
                 num_splits = layer_params.get('splits', 1)
 
                 for s in range(num_splits):

@@ -77,10 +77,10 @@ class FlopsProfiler(BaseProfiler):
         """Return estimated time in milliseconds."""
         if not flops or flops == 0:
             return 0
-        gflops = flops / (10**9)
+        gflops = flops / (10 ** 9)
         time_in_sec = gflops / self._device.peek_gflop
-        time_in_ms = time_in_sec * (10**3)
-        clock_time_in_ms = 1 / self._device.clock / (10**3)
+        time_in_ms = time_in_sec * (10 ** 3)
+        clock_time_in_ms = 1 / self._device.clock / (10 ** 3)
         # PPP for computation, since we estimated form the full time.
         time_in_ms /= self.options.ppp_comp
         return max(clock_time_in_ms, time_in_ms)
@@ -88,8 +88,8 @@ class FlopsProfiler(BaseProfiler):
     def _estimate_comm_time(self, comm_in_bytes, bandwidth=None, ppp=None):
         if bandwidth is None:
             bandwidth = self._device.mem_bandwidth
-        clock_time_in_ms = 1 / self._device.clock / (10**3)
-        time_in_ms = comm_in_bytes / 2**30 / bandwidth * 10**3
+        clock_time_in_ms = 1 / self._device.clock / (10 ** 3)
+        time_in_ms = comm_in_bytes / 2 ** 30 / bandwidth * 10 ** 3
         # PPP for computation, since we estimated form the full time.
         if ppp is None:
             time_in_ms /= self.options.ppp_comp
@@ -169,7 +169,7 @@ class FlopsProfiler(BaseProfiler):
                 layer.inputs, layer.filters, layer.strides, layer._pad_h,
                 layer._pad_w)
             algorithm_name = self.cudnn.CONV_ALGO_FWD_NAME[algo]
-            self.message = '%s %f MB' % (algorithm_name, ws_size / 10**6)
+            self.message = '%s %f MB' % (algorithm_name, ws_size / 10 ** 6)
 
             if layer.filters[0:2] == [1, 1]:
                 self.message = 'GEMM 1x1'
@@ -226,7 +226,7 @@ class FlopsProfiler(BaseProfiler):
             layer.inputs, layer.filters, layer.strides, layer._pad_h,
             layer._pad_w)
         algorithm_name = self.cudnn.CONV_ALGO_BWD_DATA_NAME[algo]
-        self.message = '%s %f MB' % (algorithm_name, ws_size / 10**6)
+        self.message = '%s %f MB' % (algorithm_name, ws_size / 10 ** 6)
 
         if layer.filters[0:2] == [1, 1]:
             self.message = 'GEMM 1x1'
@@ -265,7 +265,7 @@ class FlopsProfiler(BaseProfiler):
             layer.inputs, layer.filters, layer.strides, layer._pad_h,
             layer._pad_w)
         algorithm_name = self.cudnn.CONV_ALGO_BWD_FILTER_NAME[algo]
-        self.message = '%s %f MB' % (algorithm_name, ws_size / 10**6)
+        self.message = '%s %f MB' % (algorithm_name, ws_size / 10 ** 6)
 
         if layer.filters[0:2] == [1, 1]:
             self.message = 'GEMM 1x1'
@@ -327,9 +327,9 @@ class FlopsProfiler(BaseProfiler):
             comm_time += self._estimate_comm_time(mem)
 
             # Read the shared weights for each patch.
-            #  mem = ((layer.filters[0] * layer.filters[1] * layer.filters[3]) *
-            #         layer.outputs[1] * layer.outputs[2]) * _BYTES_FLOAT
-            #  comm_time += self._estimate_comm_time(mem)
+            # mem = ((layer.filters[0] * layer.filters[1] * layer.filters[3]) *
+            #        layer.outputs[1] * layer.outputs[2]) * _BYTES_FLOAT
+            # comm_time += self._estimate_comm_time(mem)
 
         self._logger.debug('GEMM estimates: %f = %f + %f' %
                            (comp_time + comm_time, comp_time, comm_time))
@@ -387,15 +387,17 @@ class FlopsProfiler(BaseProfiler):
             _TILE_SIZE = 32
             h_tiles = (layer.inputs[1] + _TILE_SIZE - 1) // _TILE_SIZE
             w_tiles = (layer.inputs[2] + _TILE_SIZE - 1) // _TILE_SIZE
-            fft_size = _TILE_SIZE**2
+            fft_size = _TILE_SIZE ** 2
             num_tiles = h_tiles * w_tiles
             self._logger.info('Tile FFT: %d (%dx%d) 1D: %s' %
                               (num_tiles, _TILE_SIZE, _TILE_SIZE, filter_1d))
             tile_size = _TILE_SIZE
         else:
             # Filters and inputs are padded to the same size.
-            #padded_h = (layer.inputs[1] + layer._pad_h + layer.filters[0] // 2)
-            #padded_w = (layer.inputs[2] + layer._pad_w + layer.filters[1] // 2)
+            # padded_h = (layer.inputs[1] + layer._pad_h +
+            #             layer.filters[0] // 2)
+            # padded_w = (layer.inputs[2] + layer._pad_w +
+            #             layer.filters[1] // 2)
             padded_h = max(layer.inputs[1] + layer._pad_h * 2,
                            layer.filters[0])
             padded_w = max(layer.inputs[2] + layer._pad_w * 2,
@@ -411,12 +413,11 @@ class FlopsProfiler(BaseProfiler):
         comp_time, comm_time = 0, 0
         comp_time_filters, comm_time_filters = 0, 0
 
-        ## (1) fft2d r2c.
+        # (1) fft2d r2c.
         inputs_nc = layer.inputs[0] * layer.inputs[3]
         filters_ck = layer.filters[2] * layer.filters[3]
         comp_time += num_tiles * self._estimate_comp_time(
-            inputs_nc * _fft_flops(
-                fft_size, filter_1d=filter_1d))
+            inputs_nc * _fft_flops(fft_size, filter_1d=filter_1d))
         comp_time_filters += self._estimate_comp_time(filters_ck * _fft_flops(
             fft_size, filter_1d=filter_1d))
 
@@ -436,7 +437,7 @@ class FlopsProfiler(BaseProfiler):
             comm_time_filters += self._estimate_comm_time(
                 filters_ck * fft_size * _BYTES_COMPLEX)
 
-        ## (2) Elementwise multiplication.
+        # (2) Elementwise multiplication.
         # Complex number: add 2, muliply 4
         comp_time += num_tiles * self._estimate_comp_time(
             4 * layer.inputs[0] * layer.inputs[3] * layer.filters[3] *
@@ -464,10 +465,10 @@ class FlopsProfiler(BaseProfiler):
         mem_outputs = (layer.inputs[0] * layer.filters[3] * fft_size *
                        _BYTES_COMPLEX)
         self._logger.debug('FFT mem: %d MB (%d, %d, %d)' % (
-            (mem_inputs + mem_filters + mem_outputs) / 2**20, mem_inputs / 2
-            **20, mem_filters / 2**20, mem_outputs / 2**20))
+            (mem_inputs + mem_filters + mem_outputs) / 2 ** 20, mem_inputs / 2
+            ** 20, mem_filters / 2 ** 20, mem_outputs / 2 ** 20))
 
-        ## (3) fft2d c2r on num_tiles.
+        # (3) fft2d c2r on num_tiles.
         comp_time += num_tiles * self._estimate_comp_time(
             layer.inputs[0] * layer.filters[3] * _fft_flops(
                 fft_size, 'c2r', filter_1d=filter_1d))

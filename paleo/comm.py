@@ -25,12 +25,14 @@ class CommunicationBase(object):
     def _time_in_communication(self, data_in_bytes):
         """Returns the minimal time required under the given bandwidth in
         milliseconds."""
-        bytes_per_seconds = self._device.bandwidth / 8 * 10**9
+        bytes_per_seconds = self._device.bandwidth / 8 * 10 ** 9
         bytes_per_seconds = bytes_per_seconds
         return data_in_bytes / bytes_per_seconds * 1000 / self._ppp_comm
 
     def all_reduce(self, data_in_bytes):
-        """Returns the minimal time required for all reduce for one iteration."""
+        """
+        Returns the minimal time required for all reduce for one iteration.
+        """
         pass
 
 
@@ -79,10 +81,12 @@ class ButterflyMixing(CommunicationBase):
 
 
 def get_all_comm_schemes(num_nodes, device, ppp_comm):
-    return [OneToAll(num_nodes, device, ppp_comm),
-            TreeAllReduce(num_nodes, device, ppp_comm),
-            ButterflyAllReduce(num_nodes, device, ppp_comm),
-            ButterflyMixing(num_nodes, device, ppp_comm)]
+    return [
+        OneToAll(num_nodes, device, ppp_comm),
+        TreeAllReduce(num_nodes, device, ppp_comm),
+        ButterflyAllReduce(num_nodes, device, ppp_comm),
+        ButterflyMixing(num_nodes, device, ppp_comm)
+    ]
 
 
 def get_comm_scheme(name, num_nodes, device, ppp_comm):

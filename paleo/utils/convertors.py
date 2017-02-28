@@ -15,6 +15,9 @@ logging.basicConfig(format=FORMAT)
 logger = logging.getLogger("paleo:convertor")
 logger.setLevel(logging.INFO)
 
+# NCHW -> NHWC
+NCHW_2_NHWC = (0, 3, 1, 2)
+
 
 class ModelSpec(object):
     def __init__(self, name):
@@ -37,9 +40,6 @@ class ModelSpec(object):
         """Save the model spec as a json file."""
         with open(filename, 'w') as f:
             json.dump(self.model_spec, f)
-
-# NCHW -> NHWC
-NCHW_2_NHWC = (0, 3, 1, 2)
 
 
 class CaffeConvertor(object):

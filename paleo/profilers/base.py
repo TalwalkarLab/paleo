@@ -4,7 +4,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from abc import abstractmethod, abstractproperty
+from abc import abstractmethod
 import logging
 
 
@@ -69,12 +69,11 @@ class TimeMeasure(object):
             total_time=self.total_time + other.total_time)
         # Sometimes the time measure may not have detailed items,
         # in this case we set total time directly.
-        #expected_total_time = self.total_time + other.total_time
-        #if res.total_time != expected_total_time:
-        #    res.comm_time = 0
-        #    res.comp_time = 0
-        #   res.total_time = expected_total_time
-        #    print(self, other, res)
+        # expected_total_time = self.total_time + other.total_time
+        # if res.total_time != expected_total_time:
+        #     res.comm_time = 0
+        #     res.comp_time = 0
+        #     res.total_time = expected_total_time
         return res
 
     def __sub__(self, other):

@@ -300,7 +300,7 @@ class TensorFlowProfiler(BaseProfiler):
                 # Create a session and initialize variables.
                 with tf.Session(config=config) as sess:
 
-                    #writer = tf.train.SummaryWriter('logs/', sess.graph)
+                    # writer = tf.train.SummaryWriter('logs/', sess.graph)
                     sess.run(init)
 
                     # Run the ops.
@@ -308,13 +308,13 @@ class TensorFlowProfiler(BaseProfiler):
                     for i in range(self.options.num_warmup +
                                    self.options.num_iter):
                         start_time = time.time()
-                        _ = sess.run(ops_to_run)
+                        sess.run(ops_to_run)
                         duration = time.time() - start_time
 
                         if i >= self.options.num_warmup:
                             # Mesure time in milliseconds.
                             durations.append(duration * (10**3))
 
-                mean_time, std = np.mean(durations), np.std(durations)
+                mean_time = np.mean(durations)
         tf.reset_default_graph()
         return TimeMeasure(total_time=mean_time)
