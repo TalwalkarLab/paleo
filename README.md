@@ -1,5 +1,6 @@
 # Paleo
 
+[![Build Status](https://travis-ci.org/TalwalkarLab/paleo.svg?branch=master)](https://travis-ci.org/TalwalkarLab/paleo)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 Paleo is an analytical model to estimate the scalability and performance of deep learning systems.
