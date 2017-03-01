@@ -1,0 +1,353 @@
+body {
+  margin: 0;
+}
+
+a img{
+  border: 0px;
+}
+
+/*.paleo-header {
+  background-color: #37474f !important;
+}*/
+
+.paleo-header .mdl-menu__container {
+  z-index: 50;
+  margin: 0 !important;
+}
+
+.paleo-header-row {
+  width: 1100px  !important;
+  margin: 0 auto;
+  padding-left: 0px !important;
+}
+
+.paleo-title {
+  color: #545454;
+  font-family: Lora, Palatino;
+  font-size: 28px;
+}
+
+.paleo-logo-image {
+  height: 28px;
+  width: 140px;
+}
+
+
+.paleo-header {
+  overflow: visible;
+  background-color: white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+  .paleo-header .material-icons {
+    color: #767777 !important;
+  }
+
+  .paleo-header .mdl-navigation__link {
+    color: #757575;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .paleo-navigation-container {
+    /* Simple hack to make the overflow happen to the left instead... */
+    direction: rtl;
+    order: 1;
+    width: 500px;
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+        width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .paleo-navigation {
+    /* ... and now make sure the content is actually LTR */
+    direction: ltr;
+    justify-content: flex-end;
+    width: 800px;
+  }
+
+  .paleo-navigation .mdl-navigation__link {
+    display: inline-block;
+    height: 60px;
+    background-color: transparent !important;
+  }
+
+  .paleo-more-button {
+    order: 3;
+  }
+
+.paleo-intro-section {
+  background-color: #37474f;
+  position: relative;
+  /*height: 200px;*/
+}
+  .paleo-intro-section .paleo-intro-text{
+    padding: 35px 20px;
+    width: 50%;
+    margin: 0 auto;
+    text-align: center;
+    color: white;
+}
+
+.paleo-playground-section {
+  background-color: #ededed;
+  position: relative;
+  overflow: scroll;
+}
+
+  .paleo-playground-section .paleo-playground-container {
+    width: 1100px;
+    margin: 0 auto;
+  }
+
+  .paleo-playground-section .paleo-panel-left {
+    position: relative;
+    width: 420px;
+    display: inline-block;
+    margin: 0 10px;
+    padding-right: 20px;
+    border-right: 1px solid #ddd;
+  }
+
+  .paleo-playground-section .paleo-panel-right {
+    position: relative;
+    width: 600px;
+    display: inline-block;
+    margin: 0 10px;
+  }
+
+  .paleo-playground-section .paleo-panel-title {
+    padding: 10px 0;
+    margin: 10px 0;
+    text-transform: uppercase;
+  }
+
+.paleo-config-panel {
+  position: relative;
+}
+
+  .paleo-config-panel hr{
+    margin: 5px 0;
+  }
+
+  .paleo-config-panel .paleo-submit {
+    margin: 10px 0;
+    padding: 10px 0;
+    text-align: center;
+  }
+
+  .paleo-config-panel .control label.select-label {
+    color: rgb(96, 125, 139);
+    font-size: 12px;
+    display: block;
+    margin-bottom: -7px;
+  }
+
+  .paleo-config-panel .control span.paleo-control-label {
+    /*color: rgb(96, 125, 139);*/
+    font-size: 14px !important;
+    display: block;
+  }
+
+  .paleo-config-panel .paleo-slider{
+    /*margin: 0;*/
+    margin: 10px 0;
+    width: 100%;
+    float: left;
+  }
+
+  .paleo-config-panel .paleo-slider .mdl-slider{
+    margin: 0;
+  }
+
+  .paleo-config-panel .paleo-slider .mdl-slider__background-flex{
+    margin: 0 6px;
+  }
+
+
+  .paleo-config-panel .paleo-control-info{
+    padding: 2px 0;
+    font-size: 12px;
+    color: #666;
+    height: 40px;
+  }
+
+  .paleo-config-panel .select select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    display: block;
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 6px 0;
+    width: 100%;
+    font-size: 14px;
+    border-bottom: solid 1px #ccc;
+    color: #333;
+    outline: none;
+  }
+
+  .paleo-config-panel .select {
+    position: relative;
+  }
+
+  .paleo-config-panel .select::after {
+    class: "material-icons";
+    content: "arrow_drop_down";
+    color: #999;
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 18px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    position: absolute;
+    right: 0;
+    top: 6px;
+    pointer-events: none;
+  }
+
+  .paleo-config-panel .control-group{
+    margin: 10px 0;
+  }
+
+  .paleo-config-panel .control-group .control{
+    /*border: 1px solid red;*/
+    margin-right: 10px;
+    display: inline-block;
+    width: 170px;
+  }
+
+.paleo-faq-panel {
+  margin-top: 100px;
+  margin-bottom: 50px;
+}
+
+  .paleo-faq-panel p{
+    font-size: 14px;
+    margin: 10px 0;
+    line-height: 20px;
+  }
+
+.paleo-info-panel {
+  margin-top: 100px;
+}
+
+  .paleo-info-panel p{
+    color: #666;
+    font-size: 12px;
+    margin: 10px 0;
+    line-height: 20px;
+  }
+
+.paleo-result-panel {
+  position: relative;
+}
+
+  .paleo-result-panel .paleo-plot-container {
+    margin: 10px auto;
+  }
+
+  .paleo-result-panel .paleo-plot-title {
+    margin: 0 auto;
+    font-size: 18px;
+  }
+
+  .paleo-result-panel .paleo-plot {
+    user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+    margin: 0 auto;
+  }
+
+  .paleo-result-panel .ct-axis-title {
+    font-size: 13px;
+    fill: #666;
+  }
+
+.paleo-footer {
+  background-color: #fafafa;
+  position: relative;
+}
+
+  .paleo-footer .paleo-footer-content {
+    width: 1100px;
+    margin: 0 auto;
+  }
+
+  .paleo-footer a:hover {
+    color: #666;
+  }
+
+.paleo-link-menu:hover {
+  cursor: pointer;
+}
+
+.ct-legend {
+    position: relative;
+    z-index: 10;
+}
+
+
+ .ct-legend {
+     position: relative;
+     z-index: 10;
+     list-style: none;
+     text-align: center;
+ }
+ .ct-legend li {
+     position: relative;
+     padding-left: 23px;
+     margin-right: 10px;
+     margin-bottom: 3px;
+     cursor: pointer;
+     display: inline-block;
+ }
+ .ct-legend li:before {
+     width: 12px;
+     height: 12px;
+     position: absolute;
+     left: 0;
+     content: '';
+     border: 3px solid transparent;
+     border-radius: 2px;
+ }
+ .ct-legend li.inactive:before {
+     background: transparent;
+ }
+ .ct-legend.ct-legend-inside {
+     position: absolute;
+     top: 0;
+     right: 0;
+ }
+ .ct-legend.ct-legend-inside li{
+     display: block;
+     margin: 0;
+ }
+ .ct-legend .ct-series-0:before {
+     background-color: #d70206;
+     border-color: #d70206;
+ }
+ .ct-legend .ct-series-1:before {
+     background-color: #f05b4f;
+     border-color: #f05b4f;
+ }
+ .ct-legend .ct-series-2:before {
+     background-color: #f4c63d;
+     border-color: #f4c63d;
+ }
+ .ct-legend .ct-series-3:before {
+     background-color: #d17905;
+     border-color: #d17905;
+ }
+ .ct-legend .ct-series-4:before {
+     background-color: #453d3f;
+     border-color: #453d3f;
+ }
