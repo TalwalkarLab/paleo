@@ -18,11 +18,10 @@ Paleo uses the following dependencies:
 
 - numpy
 - click
-- six (Not fully compatible with Python 3 yet)
+- six
 - cuDNN (Optional. Use `--use_only_gemm` to disable cuDNN heuristics)
-- TensorFlow (Optional. For empirical comparison only.)
 
-Tested with Python 2.7, cuDNN v4, and TensorFlow 0.9 on Ubuntu 14.04.
+Tested with Python 2.7, cuDNN v4 on Ubuntu 14.04.
 
 To install Paleo, run the following command in the cloned directory:
 
