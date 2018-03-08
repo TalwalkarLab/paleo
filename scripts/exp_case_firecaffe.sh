@@ -11,7 +11,7 @@ echo "FireCaffe NiN experiment\n$(date)\n" > $OUT_FILE
 # Summary
 ./paleo.sh summary $NET_FILE >> $OUT_FILE
 
-echo '\n\n' >> $OUTFILE
+echo '\n\n' >> $OUT_FILE
 
 # Scalability simulation.
 ./paleo.sh simulate $NET_FILE \
@@ -23,7 +23,7 @@ echo '\n\n' >> $OUTFILE
     --ppp_comm=$PPP_COMM \
     --scaling=strong >> $OUT_FILE
 
-echo '\n' >> $OUTFILE
+echo '\n' >> $OUT_FILE
 
 ./paleo.sh simulate $NET_FILE \
     --batch_size=1024 \
