@@ -21,6 +21,12 @@ Paleo uses the following dependencies:
 - six
 - cuDNN (Optional. Use `--use_only_gemm` to disable cuDNN heuristics)
 
+Use pip to install the depenencies with the pinned versions:
+
+```
+pip install -r requirements.txt
+```
+
 Tested with Python 2.7, cuDNN v4 on Ubuntu 14.04.
 
 To install Paleo, run the following command in the cloned directory:
