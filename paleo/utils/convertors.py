@@ -84,9 +84,9 @@ class CaffeConvertor(object):
                 # FIXME: the input size is not known if not provided.
 
             if len(layer.bottom) > 0:
-                for l in layer.bottom:
+                for name in layer.bottom:
                     layer_params['parents'].append(
-                        (str(l) if l != caffe_data_layer_name else 'data'))
+                        str(name) if name != caffe_data_layer_name else 'data')
 
             # For layers spec:
             #   http://caffe.berkeleyvision.org/tutorial/layers.html
